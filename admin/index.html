@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ja" data-root="../" data-title-ja="管理ページ | 松谷 奏" data-title-en="Admin | Kanato Matsutani">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>管理ページ</title>
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/vendor/leaflet/leaflet.css">
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <script src="../assets/js/main.js"></script>
+</head>
+<body data-page="admin">
+<main>
+  <header class="page-hero" style="padding-bottom:1.5rem">
+    <div class="container">
+      <p class="eyebrow">Owner only</p>
+      <h1 style="font-size:clamp(1.8rem,4vw,2.6rem)"><span lang="ja">管理ページ</span><span lang="en">Admin</span></h1>
+      <p class="lead"><span lang="ja">旅行の写真や各ページのデータを、ブラウザから直接 GitHub リポジトリに保存（コミット）します。書き込み権限のあるトークンを持つ人（＝あなた）だけが編集できます。</span>
+        <span lang="en">Edit page data and upload travel photos, committed straight to the GitHub repository from your browser. Only someone holding a token with write access (you) can make changes.</span></p>
+    </div>
+  </header>
+
+  <section style="padding-top:0">
+    <div class="container">
+      <!-- connection -->
+      <div class="card" id="connect-card">
+        <h2 style="font-size:1.2rem"><span class="status-dot" id="status-dot"></span><span lang="ja">GitHub に接続</span><span lang="en">Connect to GitHub</span></h2>
+        <div class="form-grid">
+          <div class="full">
+            <label for="tok"><span lang="ja">Fine-grained Personal Access Token</span><span lang="en">Fine-grained personal access token</span></label>
+            <input id="tok" type="password" autocomplete="off" spellcheck="false" placeholder="github_pat_…">
+          </div>
+          <div><label for="cfg-repo"><span lang="ja">リポジトリ</span><span lang="en">Repository</span></label><input id="cfg-repo" type="text"></div>
+          <div><label for="cfg-branch"><span lang="ja">ブランチ</span><span lang="en">Branch</span></label><input id="cfg-branch" type="text"></div>
+          <div style="display:flex;align-items:end;gap:.5rem;flex-wrap:wrap">
+            <label style="display:flex;gap:.4rem;align-items:center;margin:0"><input type="checkbox" id="remember" style="width:auto"> <span lang="ja">この端末に記憶</span><span lang="en">Remember on this device</span></label>
+          </div>
+          <div style="display:flex;align-items:end;gap:.5rem">
+            <button class="btn btn-primary" id="btn-connect" type="button"><span lang="ja">接続</span><span lang="en">Connect</span></button>
+            <button class="btn btn-sm btn-ghost" id="btn-logout" type="button"><span lang="ja">トークンを消去</span><span lang="en">Forget token</span></button>
+          </div>
+        </div>
+        <p class="small muted" id="conn-msg" style="margin:.8rem 0 0"></p>
+        <details class="glossary" style="margin-top:1rem"><summary><span lang="ja">トークンの作り方（初回のみ）</span><span lang="en">How to create a token (once)</span></summary>
+          <ol class="small">
+            <li><span lang="ja">GitHub の <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Settings → Developer settings → Fine-grained tokens → Generate new token</a> を開く</span><span lang="en">Open <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Settings → Developer settings → Fine-grained tokens → Generate new token</a></span></li>
+            <li><span lang="ja">Repository access：<b>Only select repositories</b> → このサイトのリポジトリだけを選ぶ</span><span lang="en">Repository access: <b>Only select repositories</b> → pick only this site's repository</span></li>
+            <li><span lang="ja">Permissions → Repository permissions → <b>Contents: Read and write</b>（他は不要）</span><span lang="en">Permissions → Repository permissions → <b>Contents: Read and write</b> (nothing else)</span></li>
+            <li><span lang="ja">有効期限を設定して作成し、上の欄に貼り付けて「接続」</span><span lang="en">Set an expiry, generate, paste it above and press Connect</span></li>
+          </ol>
+          <p class="small warn"><span lang="ja">トークンはこのブラウザ内（localStorage / sessionStorage）にだけ保存され、サイトのファイルには一切書き込まれません。共用 PC では「記憶」をオフにしてください。万一漏れた場合は GitHub 上でトークンを削除すれば無効になります。</span>
+            <span lang="en">The token is stored only in this browser (localStorage / sessionStorage) and never written into the site. Leave “Remember” off on shared computers. If it ever leaks, delete it on GitHub and it stops working immediately.</span></p>
+        </details>
+      </div>
+
+      <!-- editor -->
+      <div id="editor" class="hidden" style="margin-top:1.5rem">
+        <div class="tabs" id="tabs"></div>
+        <div class="admin-grid">
+          <aside class="card" style="padding:1rem">
+            <div style="display:flex;gap:.5rem;margin-bottom:.8rem">
+              <button class="btn btn-sm btn-primary" type="button" id="btn-new">＋ <span lang="ja">新規</span><span lang="en">New</span></button>
+            </div>
+            <div class="admin-list" id="item-list"></div>
+          </aside>
+          <div class="card" id="form-wrap"></div>
+        </div>
+
+        <!-- pending changes -->
+        <div class="card" style="margin-top:1.5rem" id="pending-card">
+          <h2 style="font-size:1.2rem">📦 <span lang="ja">未保存の変更</span><span lang="en">Pending changes</span> <span class="muted small mono" id="pending-count"></span></h2>
+          <ul class="small mono" id="pending-list" style="margin:.5rem 0 1rem;padding-left:1.2rem"></ul>
+          <div class="form-grid">
+            <div class="full"><label for="commit-msg"><span lang="ja">コミットメッセージ</span><span lang="en">Commit message</span></label><input id="commit-msg" type="text" value="Update site content via admin page"></div>
+          </div>
+          <div style="display:flex;gap:.6rem;margin-top:.8rem;flex-wrap:wrap">
+            <button class="btn btn-primary" type="button" id="btn-commit">🚀 <span lang="ja">コミットして公開</span><span lang="en">Commit &amp; publish</span></button>
+            <button class="btn btn-sm btn-ghost" type="button" id="btn-discard"><span lang="ja">変更を破棄して再読み込み</span><span lang="en">Discard &amp; reload</span></button>
+          </div>
+          <div class="log" id="log" style="margin-top:1rem">—</div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+<script src="../assets/vendor/leaflet/leaflet.js"></script>
+<script src="../assets/vendor/exifr.lite.umd.js"></script>
+<script src="../assets/vendor/marked.umd.js"></script>
+<script src="../assets/js/admin.js"></script>
+</body>
+</html>

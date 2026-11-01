@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ja" data-root="../" data-title-ja="CV | 松谷 奏" data-title-en="CV | Kanato Matsutani">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CV | 松谷 奏</title>
+  <meta name="description" content="Curriculum Vitae of Kanato Matsutani — EIC/ePIC, AC-LGAD, Hiroshima University.">
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/vendor/leaflet/leaflet.css">
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <script src="../assets/js/main.js"></script>
+</head>
+<body data-page="cv" class="sec-cv">
+<main>
+  <header class="page-hero">
+    <div class="container">
+      <p class="eyebrow">Curriculum Vitae</p>
+      <div class="cv-head card">
+        <div class="avatar" id="avatar">K</div>
+        <div>
+          <h1 style="font-size:clamp(1.8rem,4vw,2.6rem);margin:0" id="cv-name"></h1>
+          <p style="margin:.2rem 0 .6rem;font-weight:600" id="cv-position"></p>
+          <div class="cv-meta" id="cv-meta"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:.5rem">
+          <a class="btn btn-primary" id="cv-pdf" href="#" target="_blank" rel="noopener">⬇ PDF</a>
+          <button class="btn btn-sm" type="button" onclick="window.print()"><span lang="ja">印刷</span><span lang="en">Print</span></button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section style="padding-top:0">
+    <div class="container">
+      <div class="stats reveal" id="cv-stats"></div>
+    </div>
+  </section>
+
+  <section style="padding-top:0">
+    <div class="container">
+      <div class="card reveal">
+        <h2 style="font-size:1.25rem">🗓 <span lang="ja">経歴タイムライン</span><span lang="en">Timeline</span></h2>
+        <div class="timeline-chart" id="tl-chart"></div>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding-top:0">
+    <div class="container cv-cols">
+      <div>
+        <div class="cv-block reveal">
+          <h2>🎓 <span lang="ja">学歴・職歴</span><span lang="en">Education &amp; positions</span></h2>
+          <ul class="tl-list" id="cv-history"></ul>
+        </div>
+
+        <div class="cv-block reveal">
+          <h2>🎤 <span lang="ja">学会・研究会発表</span><span lang="en">Presentations</span> <span class="cnt" id="talk-count"></span></h2>
+          <div class="tabs" id="talk-filter">
+            <button class="chip on" data-f="all" type="button"><span lang="ja">すべて</span><span lang="en">All</span></button>
+            <button class="chip" data-f="intl" type="button"><span lang="ja">国際</span><span lang="en">International</span></button>
+            <button class="chip" data-f="domestic" type="button"><span lang="ja">国内</span><span lang="en">Domestic</span></button>
+            <button class="chip" data-f="oral" type="button"><span lang="ja">口頭</span><span lang="en">Oral</span></button>
+            <button class="chip" data-f="poster" type="button"><span lang="ja">ポスター</span><span lang="en">Poster</span></button>
+          </div>
+          <ul class="talk-list" id="cv-talks"></ul>
+          <p class="muted small" style="margin-top:.6rem"><span lang="ja">※ 日本語で行った講演の題目は英訳で表記しています。</span><span lang="en">Titles of talks given in Japanese are translated.</span></p>
+        </div>
+
+        <div class="cv-block reveal">
+          <h2>📝 <span lang="ja">論文・出版物</span><span lang="en">Publications</span></h2>
+          <ul class="talk-list" id="cv-pubs"></ul>
+        </div>
+
+        <div class="cv-block reveal">
+          <h2>📚 <span lang="ja">学位論文</span><span lang="en">Theses</span></h2>
+          <ul class="talk-list" id="cv-theses"></ul>
+        </div>
+
+        <div class="cv-block reveal">
+          <h2>🌏 <span lang="ja">研究滞在・ビームテスト・スクール</span><span lang="en">Research visits, beam tests &amp; schools</span></h2>
+          <div id="visit-map" style="margin-bottom:1rem"></div>
+          <ul class="tl-list" id="cv-visits"></ul>
+        </div>
+      </div>
+
+      <aside>
+        <div class="card cv-block reveal">
+          <h2 style="font-size:1.1rem">🛠 <span lang="ja">専門・スキル</span><span lang="en">Specialties</span></h2>
+          <div class="skill-grid" id="cv-skills"></div>
+        </div>
+        <div class="card cv-block reveal">
+          <h2 style="font-size:1.1rem">🏆 <span lang="ja">受賞・フェローシップ・助成</span><span lang="en">Awards, fellowships &amp; grants</span></h2>
+          <div id="cv-awards"></div>
+        </div>
+        <div class="card cv-block reveal">
+          <h2 style="font-size:1.1rem">🤝 <span lang="ja">所属コラボレーション</span><span lang="en">Collaborations</span></h2>
+          <div id="cv-members"></div>
+        </div>
+        <p class="muted small center" id="cv-updated"></p>
+      </aside>
+    </div>
+  </section>
+</main>
+<script src="../assets/vendor/leaflet/leaflet.js"></script>
+<script src="../assets/js/cv.js"></script>
+</body>
+</html>

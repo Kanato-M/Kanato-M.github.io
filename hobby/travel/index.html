@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ja" data-root="../../" data-title-ja="旅行 | 松谷 奏" data-title-en="Travel | Kanato Matsutani">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>旅行 | 松谷 奏</title>
+  <meta name="description" content="Travel log of Kanato Matsutani — places on a map, with photos.">
+  <link rel="icon" href="../../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/vendor/leaflet/leaflet.css">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <script src="../../assets/js/main.js"></script>
+</head>
+<body data-page="travel" class="sec-travel">
+<main>
+  <header class="page-hero">
+    <div class="container">
+      <p class="eyebrow">Travel log</p>
+      <h1><span lang="ja">旅の記録</span><span lang="en">Places I've been</span></h1>
+      <p class="lead"><span lang="ja">旅行や研究で訪れた場所を、地図と写真で。ピンをクリックすると写真が見られます。</span>
+        <span lang="en">Trips and research travel, on a map with photos. Click a pin to see the pictures.</span></p>
+    </div>
+  </header>
+
+  <section style="padding-top:0">
+    <div class="container">
+      <div class="stats reveal" id="tr-stats" style="margin-bottom:1.5rem"></div>
+      <div style="display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;justify-content:space-between;margin-bottom:1rem">
+        <div class="chips" id="tr-filter"></div>
+        <div style="display:flex;gap:.5rem;align-items:center">
+          <select id="tr-year" style="width:auto"></select>
+          <a class="btn btn-sm btn-ghost" href="../../admin/index.html#travel" title="Owner only">✏️ <span lang="ja">編集</span><span lang="en">Edit</span></a>
+        </div>
+      </div>
+      <div class="travel-layout">
+        <div id="travel-map" role="region" aria-label="Map"></div>
+        <div class="place-list" id="tr-list"></div>
+      </div>
+
+      <div class="place-detail" id="tr-detail"></div>
+    </div>
+  </section>
+</main>
+
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Photo">
+  <button class="lb-close" type="button" aria-label="Close">×</button>
+  <button class="lb-prev" type="button" aria-label="Previous">‹</button>
+  <img alt="">
+  <button class="lb-next" type="button" aria-label="Next">›</button>
+  <p class="cap"></p>
+</div>
+
+<script src="../../assets/vendor/leaflet/leaflet.js"></script>
+<script src="../../assets/js/travel.js"></script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+{
+  "playlists": [
+    {
+      "sample": true,
+      "title": {
+        "ja": "研究のおとも",
+        "en": "Lab-session soundtrack"
+      },
+      "description": {
+        "ja": "解析しながら流すプレイリスト（サンプル：管理画面から URL を登録すると埋め込み表示されます）",
+        "en": "What I play while analysing data (sample — add a Spotify / YouTube / Apple Music URL from the admin page)."
+      },
+      "url": ""
+    },
+    {
+      "sample": true,
+      "title": {
+        "ja": "旅の BGM",
+        "en": "Travel BGM"
+      },
+      "description": {
+        "ja": "移動中によく聞く曲たち（サンプル）",
+        "en": "Songs for long flights and train rides (sample)."
+      },
+      "url": ""
+    }
+  ],
+  "karaoke": [],
+  "theory": [
+    {
+      "id": "harmonics-and-temperament",
+      "title": {
+        "ja": "倍音と音律 — 物理屋のための音程入門",
+        "en": "Harmonics & temperament — intervals for physicists"
+      },
+      "summary": {
+        "ja": "なぜドとソはきれいに響くのか？ 周波数比・うなり・平均律と純正律の違いをまとめたノート。",
+        "en": "Why do C and G sound good together? Frequency ratios, beats, and equal vs. just temperament."
+      },
+      "file": {
+        "ja": "notes/music/harmonics-and-temperament.ja.md",
+        "en": "notes/music/harmonics-and-temperament.en.md"
+      },
+      "date": "2026-11",
+      "tags": [
+        "acoustics",
+        "temperament"
+      ]
+    }
+  ]
+}

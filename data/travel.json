@@ -1,0 +1,169 @@
+{
+  "places": [
+    {
+      "id": "higashi-hiroshima",
+      "category": "home",
+      "name": { "ja": "東広島", "en": "Higashi-Hiroshima" },
+      "country": { "ja": "日本", "en": "Japan" },
+      "countryCode": "JP",
+      "lat": 34.4021, "lng": 132.7131,
+      "start": "2020-04", "end": "",
+      "tags": ["home", "research"],
+      "description": {
+        "ja": "広島大学のある拠点の街。研究室とキャンパス周辺の写真をここに。",
+        "en": "Home base — where Hiroshima University and my lab are."
+      },
+      "photos": []
+    },
+    {
+      "id": "bnl-2024",
+      "category": "research",
+      "name": { "ja": "ブルックヘブン国立研究所（ロングアイランド）", "en": "Brookhaven National Lab, Long Island" },
+      "country": { "ja": "アメリカ", "en": "USA" },
+      "countryCode": "US",
+      "lat": 40.8695, "lng": -72.8868,
+      "start": "2024-11-11", "end": "2025-02-08",
+      "tags": ["research", "long stay"],
+      "description": {
+        "ja": "約3か月の滞在。AC-LGAD 読み出し用 ASIC の開発に取り組んだ。EIC が建設される場所でもある。",
+        "en": "A three-month stay developing a readout ASIC for AC-LGADs — at the very site where the EIC is being built."
+      },
+      "photos": []
+    },
+    {
+      "id": "kek-tsukuba",
+      "category": "research",
+      "name": { "ja": "KEK（つくば）", "en": "KEK, Tsukuba" },
+      "country": { "ja": "日本", "en": "Japan" },
+      "countryCode": "JP",
+      "lat": 36.1497, "lng": 140.0760,
+      "start": "2022-12", "end": "2026-06",
+      "tags": ["research", "beam test"],
+      "description": {
+        "ja": "トレーニング、サマースクール、そして何度ものビームテストで通った場所。",
+        "en": "Training, a summer school and many beam-test shifts."
+      },
+      "photos": []
+    },
+    {
+      "id": "tainan-2024",
+      "category": "research",
+      "name": { "ja": "台南", "en": "Tainan" },
+      "country": { "ja": "台湾", "en": "Taiwan" },
+      "countryCode": "TW",
+      "lat": 22.9968, "lng": 120.2186,
+      "start": "2024-01", "end": "2024-01",
+      "tags": ["research", "workshop"],
+      "description": {
+        "ja": "国立成功大学での EIC-Asia Workshop に参加。",
+        "en": "EIC-Asia Workshop at National Cheng Kung University."
+      },
+      "photos": []
+    },
+    {
+      "id": "benicassim-2025",
+      "category": "research",
+      "name": { "ja": "ベニカシム", "en": "Benicàssim" },
+      "country": { "ja": "スペイン", "en": "Spain" },
+      "countryCode": "ES",
+      "lat": 40.0546, "lng": 0.0640,
+      "start": "2025-06", "end": "2025-07",
+      "tags": ["research", "school"],
+      "description": {
+        "ja": "地中海沿いの街で開かれた 2nd European School on the Physics of the EIC。",
+        "en": "The 2nd European School on the Physics of the EIC, on the Mediterranean coast."
+      },
+      "photos": []
+    },
+    {
+      "id": "jlab-2025",
+      "category": "research",
+      "name": { "ja": "ジェファーソン研究所（ニューポートニューズ）", "en": "Jefferson Lab, Newport News" },
+      "country": { "ja": "アメリカ", "en": "USA" },
+      "countryCode": "US",
+      "lat": 37.0966, "lng": -76.4813,
+      "start": "2025-07", "end": "2025-07",
+      "tags": ["research", "collaboration meeting"],
+      "description": {
+        "ja": "EICUG & ePIC 合同コラボレーションミーティングと Early Career Workshop。",
+        "en": "EICUG & ePIC Joint Collaboration Meeting and Early Career Workshop."
+      },
+      "photos": []
+    },
+    {
+      "id": "glasgow-2026",
+      "category": "research",
+      "name": { "ja": "グラスゴー", "en": "Glasgow" },
+      "country": { "ja": "イギリス", "en": "UK" },
+      "countryCode": "GB",
+      "lat": 55.8721, "lng": -4.2882,
+      "start": "2026-07", "end": "2026-07",
+      "tags": ["research", "talk"],
+      "description": {
+        "ja": "Joint ePIC/EICUG Meeting で日本の AC-LGAD QA について口頭発表。",
+        "en": "Gave a talk on AC-LGAD sensor QA in Japan at the Joint ePIC/EICUG Meeting."
+      },
+      "photos": []
+    },
+    {
+      "id": "sapporo-2024",
+      "category": "research",
+      "name": { "ja": "札幌", "en": "Sapporo" },
+      "country": { "ja": "日本", "en": "Japan" },
+      "countryCode": "JP",
+      "lat": 43.0710, "lng": 141.3440,
+      "start": "2024-09", "end": "2024-09",
+      "tags": ["research", "talk"],
+      "description": { "ja": "日本物理学会 第79回年次大会（北海道大学）。", "en": "JPS 79th Annual Meeting at Hokkaido University." },
+      "photos": []
+    },
+    {
+      "id": "kumamoto-2025",
+      "category": "research",
+      "name": { "ja": "熊本", "en": "Kumamoto" },
+      "country": { "ja": "日本", "en": "Japan" },
+      "countryCode": "JP",
+      "lat": 32.8031, "lng": 130.7079,
+      "start": "2025-09", "end": "2025-09",
+      "tags": ["research", "talk"],
+      "description": { "ja": "HEHI-ex-J Workshop で口頭発表。", "en": "Talk at the HEHI-ex-J Workshop." },
+      "photos": []
+    },
+    {
+      "id": "kyoto-2026",
+      "category": "research",
+      "name": { "ja": "京都", "en": "Kyoto" },
+      "country": { "ja": "日本", "en": "Japan" },
+      "countryCode": "JP",
+      "lat": 35.0285, "lng": 135.7859,
+      "start": "2026-03", "end": "2026-03",
+      "tags": ["research", "school"],
+      "description": { "ja": "基礎物理学研究所の YITP International School on EIC Physics。", "en": "YITP International School on EIC Physics." },
+      "photos": []
+    },
+    {
+      "id": "hamamatsu-2026",
+      "category": "research",
+      "name": { "ja": "浜松", "en": "Hamamatsu" },
+      "country": { "ja": "日本", "en": "Japan" },
+      "countryCode": "JP",
+      "lat": 34.7108, "lng": 137.7261,
+      "start": "2026-07", "end": "2026-07",
+      "tags": ["research", "industry"],
+      "description": { "ja": "センサーを製造する浜松ホトニクスで性能報告と打ち合わせ。", "en": "Performance report and production meeting at Hamamatsu Photonics, who make the sensors." },
+      "photos": []
+    },
+    {
+      "id": "tokyo-2026",
+      "category": "research",
+      "name": { "ja": "東京（駒場）", "en": "Tokyo (Komaba)" },
+      "country": { "ja": "日本", "en": "Japan" },
+      "countryCode": "JP",
+      "lat": 35.6595, "lng": 139.6847,
+      "start": "2026-09", "end": "2026-09",
+      "tags": ["research", "talk"],
+      "description": { "ja": "日本物理学会 第81回年次大会（東京大学 駒場）。", "en": "JPS 81st Annual Meeting at The University of Tokyo, Komaba." },
+      "photos": []
+    }
+  ]
+}
