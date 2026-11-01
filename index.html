@@ -1,9 +1,136 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja" data-root="" data-title-ja="松谷 奏 | Kanato Matsutani" data-title-en="Kanato Matsutani | 松谷 奏">
 <head>
-    <title>My Portfolio</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>松谷 奏 | Kanato Matsutani</title>
+  <meta name="description" content="Kanato Matsutani — PhD student in experimental nuclear physics (EIC / ePIC, AC-LGAD) at Hiroshima University. Research, CV, travel, games and music.">
+  <meta property="og:title" content="Kanato Matsutani | 松谷 奏">
+  <meta property="og:description" content="Peering inside the proton, picosecond by picosecond. Research, CV, travel, games & music.">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script src="assets/js/main.js"></script>
 </head>
-<body>
-    <h1>こんにちは！松谷奏のページです。</h1>
+<body data-page="home">
+<main>
+
+  <!-- HERO -->
+  <section class="hero" aria-label="Intro">
+    <canvas id="event-display" aria-hidden="true"></canvas>
+    <div class="hero-shade"></div>
+    <div class="container hero-content">
+      <p class="name-sub">KANATO MATSUTANI · まつたに かなと</p>
+      <h1><span lang="ja">松谷 奏</span><span lang="en">Kanato<br>Matsutani</span></h1>
+      <p class="roles"><span id="role-text"></span><span class="cursor" aria-hidden="true"></span></p>
+      <p class="lead">
+        <span lang="ja">陽子の中身を<strong>ピコ秒</strong>で覗く検出器をつくっている、広島大学の博士課程の学生です。旅と音楽とパズルが好き。</span>
+        <span lang="en">PhD student at Hiroshima University building detectors that peer inside the proton — <strong>to the picosecond</strong>. Also into travel, music and puzzles.</span>
+      </p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="research/index.html"><span lang="ja">研究を見る</span><span lang="en">Explore research</span> →</a>
+        <a class="btn" href="cv/index.html">CV</a>
+        <a class="btn btn-ghost" href="#hobby"><span lang="ja">趣味のページ</span><span lang="en">Hobbies</span> ↓</a>
+      </div>
+    </div>
+    <p class="hero-hint"><span lang="ja">背景をクリックすると衝突が起きます</span><span lang="en">Click the background to make a collision</span></p>
+  </section>
+
+  <!-- STATS -->
+  <section style="padding-top:1rem">
+    <div class="container">
+      <div class="stats reveal" id="stats">
+        <div class="stat sec-research"><div class="num">~30<small style="font-size:.5em"> ps</small></div><div class="lbl"><span lang="ja">AC-LGAD の時間分解能の目標</span><span lang="en">AC-LGAD timing goal</span></div></div>
+        <div class="stat sec-cv"><div class="num" data-count="talks">–</div><div class="lbl"><span lang="ja">学会・研究会発表</span><span lang="en">Conference talks &amp; posters</span></div></div>
+        <div class="stat sec-music"><div class="num" data-count="awards">–</div><div class="lbl"><span lang="ja">受賞・フェローシップ</span><span lang="en">Awards &amp; fellowships</span></div></div>
+        <div class="stat sec-travel"><div class="num" data-count="countries">–</div><div class="lbl"><span lang="ja">訪れた国・地域</span><span lang="en">Countries &amp; regions visited</span></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- NOW + NEWS -->
+  <section style="padding-top:0">
+    <div class="container now-grid">
+      <div class="card reveal sec-research">
+        <p class="eyebrow">Now</p>
+        <h2 style="font-size:1.4rem"><span lang="ja">いま取り組んでいること</span><span lang="en">What I'm doing now</span></h2>
+        <ul class="now-list">
+          <li class="sec-cv"><span class="dot"></span><div><strong><span lang="ja">博士課程後期 1年</span><span lang="en">1st-year PhD student</span></strong><br><span class="muted small"><span lang="ja">広島大学 クォーク物理学研究室 / JST SPRING 次世代フェロー</span><span lang="en">Quark Physics Lab, Hiroshima Univ. / JST SPRING Next-Generation Fellow</span></span></div></li>
+          <li class="sec-research"><span class="dot"></span><div><strong><span lang="ja">ePIC 用 AC-LGAD の性能評価と QA</span><span lang="en">AC-LGAD characterization &amp; QA for ePIC</span></strong><br><span class="muted small"><span lang="ja">レーザー (TCT) とビームテストで数十ピコ秒の世界を測定中</span><span lang="en">Measuring tens-of-picosecond timing with lasers (TCT) and beam tests</span></span></div></li>
+          <li class="sec-travel"><span class="dot"></span><div><strong><span lang="ja">2027年1〜3月 BNL 滞在予定</span><span lang="en">Visiting BNL, Jan–Mar 2027</span></strong><br><span class="muted small">Ozaki Exchange Program 2026</span></div></li>
+          <li class="sec-music"><span class="dot"></span><div><strong><span lang="ja">趣味</span><span lang="en">Off the clock</span></strong><br><span class="muted small"><span lang="ja">旅の写真整理、カラオケのレパートリー開拓、音楽理論の勉強</span><span lang="en">Sorting travel photos, expanding my karaoke list, learning music theory</span></span></div></li>
+        </ul>
+      </div>
+      <div class="card reveal">
+        <p class="eyebrow">News</p>
+        <h2 style="font-size:1.4rem"><span lang="ja">お知らせ</span><span lang="en">Updates</span></h2>
+        <ul class="news-list" id="news"></ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- PORTAL -->
+  <section id="explore" style="padding-top:0">
+    <div class="container">
+      <div class="section-head reveal">
+        <p class="eyebrow">Explore</p>
+        <h2><span lang="ja">サイトの歩き方</span><span lang="en">Find your way around</span></h2>
+      </div>
+
+      <p class="portal-label"><span lang="ja">研究</span><span lang="en">Research</span></p>
+      <div class="portal reveal">
+        <a class="portal-card" style="--sec:var(--c-research)" href="research/index.html">
+          <div class="icon">⚛️</div>
+          <h3><span lang="ja">研究内容</span><span lang="en">Research</span></h3>
+          <p><span lang="ja">質量の起源・EIC・AC-LGAD を、はじめての人にもわかるように。粒子識別を体験できるシミュレーター付き。</span><span lang="en">The origin of mass, the EIC and AC-LGADs explained for newcomers — with a hands-on particle-ID simulator.</span></p>
+          <span class="go">research/</span>
+        </a>
+        <a class="portal-card" style="--sec:var(--c-cv)" href="cv/index.html">
+          <div class="icon">📄</div>
+          <h3>CV</h3>
+          <p><span lang="ja">経歴タイムライン、発表、受賞、研究で訪れた場所の地図を一目で。</span><span lang="en">Timeline, talks, awards and a map of research visits — at a glance.</span></p>
+          <span class="go">cv/</span>
+        </a>
+      </div>
+
+      <p class="portal-label" id="hobby"><span lang="ja">趣味</span><span lang="en">Hobbies</span></p>
+      <div class="portal reveal">
+        <a class="portal-card" style="--sec:var(--c-travel)" href="hobby/travel/index.html">
+          <div class="icon">🗺️</div>
+          <h3><span lang="ja">旅行</span><span lang="en">Travel</span></h3>
+          <p><span lang="ja">訪れた場所を地図と写真で。</span><span lang="en">Places I've been, on a map with photos.</span></p>
+          <span class="go">hobby/travel/</span>
+        </a>
+        <a class="portal-card" style="--sec:var(--c-games)" href="hobby/games/index.html">
+          <div class="icon">🎮</div>
+          <h3><span lang="ja">ゲーム・パズル</span><span lang="en">Games &amp; Puzzles</span></h3>
+          <p><span lang="ja">自作ゲームの保管庫。ブラウザでそのまま遊べます。</span><span lang="en">An archive of games I've made — playable right in the browser.</span></p>
+          <span class="go">hobby/games/</span>
+        </a>
+        <a class="portal-card" style="--sec:var(--c-music)" href="hobby/music/index.html">
+          <div class="icon">🎧</div>
+          <h3><span lang="ja">音楽</span><span lang="en">Music</span></h3>
+          <p><span lang="ja">プレイリスト、カラオケの持ち歌、音楽理論ノート。</span><span lang="en">Playlists, karaoke repertoire and music-theory notes.</span></p>
+          <span class="go">hobby/music/</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section style="padding-top:0">
+    <div class="container">
+      <div class="card reveal" style="display:flex;flex-wrap:wrap;gap:1rem 2rem;align-items:center;justify-content:space-between">
+        <div>
+          <p class="eyebrow">Contact</p>
+          <h2 style="font-size:1.4rem;margin:0"><span lang="ja">お気軽にご連絡ください</span><span lang="en">Say hello</span></h2>
+          <p class="muted" style="margin:.3rem 0 0"><span lang="ja">共同研究・講演・その他のお問い合わせはメールで。</span><span lang="en">For collaboration, talks or anything else, email works best.</span></p>
+        </div>
+        <div class="chips" id="contact-links"></div>
+      </div>
+    </div>
+  </section>
+</main>
+<script src="assets/js/home.js"></script>
 </body>
 </html>

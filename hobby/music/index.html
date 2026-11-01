@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ja" data-root="../../" data-title-ja="音楽 | 松谷 奏" data-title-en="Music | Kanato Matsutani">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>音楽 | 松谷 奏</title>
+  <meta name="description" content="Playlists, karaoke repertoire and music-theory notes of Kanato Matsutani.">
+  <link rel="icon" href="../../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <script src="../../assets/js/main.js"></script>
+</head>
+<body data-page="music" class="sec-music">
+<main>
+  <header class="page-hero">
+    <div class="container">
+      <p class="eyebrow">Music <span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span></p>
+      <h1><span lang="ja">音楽のこと</span><span lang="en">Music</span></h1>
+      <p class="lead"><span lang="ja">よく聴くプレイリスト、カラオケの持ち歌、そして物理屋目線の音楽理論ノート。</span>
+        <span lang="en">Playlists on repeat, my karaoke repertoire, and music-theory notes from a physicist's point of view.</span></p>
+      <nav class="story-nav">
+        <a class="chip" href="#playlists">🎧 <span lang="ja">プレイリスト</span><span lang="en">Playlists</span></a>
+        <a class="chip" href="#karaoke">🎤 <span lang="ja">カラオケ</span><span lang="en">Karaoke</span></a>
+        <a class="chip" href="#theory">🎼 <span lang="ja">音楽理論ノート</span><span lang="en">Theory notes</span></a>
+        <a class="chip" href="#lab">🔊 <span lang="ja">サウンドラボ</span><span lang="en">Sound lab</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <section id="playlists" style="padding-top:0">
+    <div class="container">
+      <div class="section-head reveal" style="display:flex;justify-content:space-between;align-items:end;flex-wrap:wrap;gap:1rem">
+        <div><p class="eyebrow">Playlists</p><h2 style="margin:0"><span lang="ja">よく聴くプレイリスト</span><span lang="en">On repeat</span></h2></div>
+        <a class="btn btn-sm btn-ghost" href="../../admin/index.html#playlists">✏️ <span lang="ja">編集</span><span lang="en">Edit</span></a>
+      </div>
+      <div class="playlist-grid" id="m-playlists"></div>
+    </div>
+  </section>
+
+  <section id="karaoke" style="padding-top:0">
+    <div class="container">
+      <div class="section-head reveal" style="display:flex;justify-content:space-between;align-items:end;flex-wrap:wrap;gap:1rem">
+        <div><p class="eyebrow">Karaoke</p><h2 style="margin:0"><span lang="ja">カラオケの持ち歌</span><span lang="en">Karaoke repertoire</span></h2></div>
+        <a class="btn btn-sm btn-ghost" href="../../admin/index.html#karaoke">✏️ <span lang="ja">編集</span><span lang="en">Edit</span></a>
+      </div>
+      <div class="stats reveal" id="k-stats" style="margin-bottom:1rem"></div>
+      <div class="karaoke-tools">
+        <input type="search" id="k-search" data-ph-ja="曲名・アーティストで検索" data-ph-en="Search song or artist" placeholder="Search">
+        <select id="k-genre" style="width:auto"></select>
+        <button class="btn btn-sm btn-primary" type="button" id="k-roulette">🎲 <span lang="ja">今日の一曲</span><span lang="en">Pick a song for me</span></button>
+        <span class="roulette" id="k-pick" aria-live="polite"></span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th data-sort="song"><span lang="ja">曲名</span><span lang="en">Song</span></th>
+            <th data-sort="artist"><span lang="ja">アーティスト</span><span lang="en">Artist</span></th>
+            <th data-sort="genre"><span lang="ja">ジャンル</span><span lang="en">Genre</span></th>
+            <th data-sort="key"><span lang="ja">キー</span><span lang="en">Key</span></th>
+            <th data-sort="score"><span lang="ja">最高点</span><span lang="en">Best score</span></th>
+            <th data-sort="rating"><span lang="ja">得意度</span><span lang="en">Confidence</span></th>
+            <th><span lang="ja">メモ</span><span lang="en">Notes</span></th>
+          </tr></thead>
+          <tbody id="k-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="theory" style="padding-top:0">
+    <div class="container">
+      <div class="section-head reveal" style="display:flex;justify-content:space-between;align-items:end;flex-wrap:wrap;gap:1rem">
+        <div><p class="eyebrow">Theory archive</p><h2 style="margin:0"><span lang="ja">音楽理論 勉強ノート</span><span lang="en">Music-theory study notes</span></h2></div>
+        <a class="btn btn-sm btn-ghost" href="../../admin/index.html#theory">✏️ <span lang="ja">ノートを書く</span><span lang="en">Write a note</span></a>
+      </div>
+      <div class="note-grid" id="m-notes"></div>
+      <article class="card note-view prose hidden" id="m-note"></article>
+    </div>
+  </section>
+
+  <section id="lab" style="padding-top:0">
+    <div class="container">
+      <div class="section-head reveal">
+        <p class="eyebrow">Sound lab</p>
+        <h2><span lang="ja">サウンドラボ：耳で確かめる物理</span><span lang="en">Sound lab: hear the physics</span></h2>
+        <p class="lead"><span lang="ja">ノートの内容を実際に音で。鍵盤はクリック（または A〜K キー）で鳴ります。</span><span lang="en">Hear what the notes describe. Click the keys (or use A–K on your keyboard).</span></p>
+      </div>
+      <div class="grid grid-2">
+        <div class="card reveal">
+          <h3>🎹 <span lang="ja">平均律の鍵盤</span><span lang="en">Equal-tempered keyboard</span></h3>
+          <div class="keyboard" id="kbd"></div>
+          <p class="muted small mono" id="kbd-freq">&nbsp;</p>
+        </div>
+        <div class="card reveal">
+          <h3>🎵 <span lang="ja">和音の聴き比べ：平均律 vs 純正律</span><span lang="en">Chords: equal vs just temperament</span></h3>
+          <p class="muted small"><span lang="ja">ド・ミ・ソ（C4–E4–G4）を2つの音律で。平均律の長3度は純正より約 14 セント高く、毎秒約 10 回の「うなり」が聞こえます。</span>
+            <span lang="en">C4–E4–G4 in two tunings. The equal-tempered major third is ~14 cents sharp of just, producing roughly 10 beats per second.</span></p>
+          <div class="lab-row">
+            <button class="btn btn-sm" type="button" data-chord="et"><span lang="ja">▶ 平均律</span><span lang="en">▶ Equal</span></button>
+            <button class="btn btn-sm" type="button" data-chord="just"><span lang="ja">▶ 純正律</span><span lang="en">▶ Just</span></button>
+          </div>
+          <hr style="margin:1.2rem 0">
+          <h3>〰 <span lang="ja">うなりを聴く</span><span lang="en">Listen to beats</span></h3>
+          <label for="beat-df">440 Hz + <output id="beat-o">3</output> Hz</label>
+          <input type="range" id="beat-df" min="0" max="12" step="0.5" value="3">
+          <div class="lab-row" style="margin-top:.5rem">
+            <button class="btn btn-sm" type="button" id="beat-play">▶ <span lang="ja">2つの音を同時に鳴らす</span><span lang="en">Play both tones</span></button>
+            <span class="muted small" id="beat-txt"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+<script src="../../assets/vendor/marked.umd.js"></script>
+<script src="../../assets/js/music.js"></script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+{
+  "games": [
+    {
+      "id": "timing-challenge",
+      "type": "game",
+      "emoji": "⏱️",
+      "title": { "ja": "タイミング・チャレンジ", "en": "Timing Challenge" },
+      "description": {
+        "ja": "粒子がセンサーを通過する瞬間にタップ！ あなたの「時間分解能」を測って AC-LGAD（約30ピコ秒）と比べてみよう。",
+        "en": "Tap the instant a particle crosses the sensor! Measure your own “time resolution” and compare it with an AC-LGAD (~30 ps)."
+      },
+      "path": "games/timing-challenge/index.html",
+      "thumb": "",
+      "tags": ["reflex", "physics"],
+      "date": "2026-11",
+      "source": "https://github.com/Kanato-M/Kanato-M.github.io/tree/main/games/timing-challenge"
+    }
+  ]
+}

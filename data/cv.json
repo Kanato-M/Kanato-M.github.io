@@ -1,0 +1,290 @@
+{
+  "updated": "2026-10",
+  "profile": {
+    "name": { "ja": "松谷 奏", "en": "Kanato Matsutani" },
+    "position": {
+      "ja": "広島大学大学院 先進理工系科学研究科 博士課程後期",
+      "en": "Doctoral student, Graduate School of Advanced Science and Engineering, Hiroshima University"
+    },
+    "lab": {
+      "ja": "クォーク物理学研究室（物理学プログラム）",
+      "en": "Quark Physics Laboratory, Physics Program"
+    },
+    "office": {
+      "ja": "〒739-8526 広島県東広島市鏡山1-3-1 広島大学 理学部C棟 C310",
+      "en": "Room C310, Faculty of Science Bldg. C, 1-3-1 Kagamiyama, Higashi-Hiroshima, Hiroshima 739-8526, Japan"
+    },
+    "email": "matsutani@quark.hiroshima-u.ac.jp",
+    "supervisor": { "ja": "志垣 賢太 教授", "en": "Prof. Kenta Shigaki" },
+    "collaboration": { "ja": "ePIC Collaboration（電子・イオン衝突型加速器 EIC）/ ePIC-Japan", "en": "ePIC Collaboration (Electron-Ion Collider) / ePIC-Japan group" },
+    "pdf": "cv/Matsutani_Kanato_CV.pdf"
+  },
+
+  "skills": [
+    {
+      "icon": "🔬",
+      "title": { "ja": "研究分野", "en": "Field" },
+      "desc": {
+        "ja": "実験核物理・ハドロン物理。電子・イオン衝突型加速器 (EIC) / ePIC 実験のための検出器開発。",
+        "en": "Experimental nuclear and hadron physics; detector R&D for the Electron-Ion Collider (EIC) / ePIC experiment."
+      }
+    },
+    {
+      "icon": "⏱️",
+      "title": { "ja": "シリコン時間検出器", "en": "Silicon timing detectors" },
+      "desc": {
+        "ja": "ストリップ型・ピクセル型 AC-LGAD（ePIC Barrel TOF・Zero Degree Calorimeter 用）。数十ピコ秒の時間分解能と位置分解能の評価、センサー品質保証 (QA)。",
+        "en": "Strip- and pixel-type AC-LGADs for the ePIC Barrel TOF and Zero Degree Calorimeter; timing (tens of ps) and position resolution characterization; sensor QA."
+      }
+    },
+    {
+      "icon": "🔦",
+      "title": { "ja": "レーザー試験系 (TCT)", "en": "Laser test system (TCT)" },
+      "desc": {
+        "ja": "Transient Current Technique 系の設計・立ち上げ：1064 nm パルス赤外レーザー、電動 XY ステージ、広帯域デジタルオシロスコープ DAQ、多チャンネルストリップ読み出し。",
+        "en": "Designed and commissioned a TCT system: 1064 nm pulsed IR laser, motorized XY stages, high-bandwidth oscilloscope DAQ, multi-channel strip readout."
+      }
+    },
+    {
+      "icon": "⚡",
+      "title": { "ja": "ビームテスト", "en": "Beam tests" },
+      "desc": {
+        "ja": "KEK PF-AR での電子ビームテスト。時間応答の温度依存性の測定、データ収集 (DAQ) の運用。",
+        "en": "Electron beam tests at KEK (PF-AR), incl. temperature dependence of timing response; DAQ operation."
+      }
+    },
+    {
+      "icon": "🧩",
+      "title": { "ja": "エレクトロニクス", "en": "Electronics" },
+      "desc": {
+        "ja": "BNL でのフロントエンド読み出し ASIC 開発、ストリップ型 AC-LGAD 用読み出し基板の開発。",
+        "en": "Front-end readout ASIC development at BNL; readout board development for strip-type AC-LGADs."
+      }
+    },
+    {
+      "icon": "💻",
+      "title": { "ja": "解析・シミュレーション", "en": "Analysis & simulation" },
+      "desc": {
+        "ja": "Python による波形解析パイプライン、デジタル信号処理、時間分解能の要因分解、位置再構成、ePIC BTOF の検出器シミュレーション。",
+        "en": "Python waveform-analysis pipelines, DSP, timing-resolution budget decomposition, position reconstruction, detector simulation for the ePIC BTOF."
+      }
+    },
+    {
+      "icon": "🔍",
+      "title": { "ja": "センサー外観検査", "en": "Sensor inspection" },
+      "desc": {
+        "ja": "光学顕微鏡 (KEYENCE VHX) と、半導体ウェハ QA のためのエッジチッピング自動検出。",
+        "en": "Optical microscopy (KEYENCE VHX) and automated edge-chipping detection for wafer QA."
+      }
+    }
+  ],
+
+  "history": [
+    {
+      "lane": "edu", "start": "2017-04", "end": "2020-03", "color": "#8b7bff",
+      "label": { "ja": "高校", "en": "High school" },
+      "title": { "ja": "愛知工業大学名電高等学校", "en": "Aichi Institute of Technology Meiden High School" },
+      "place": { "ja": "愛知県名古屋市", "en": "Nagoya, Aichi, Japan" },
+      "note": { "ja": "2020年3月 卒業", "en": "High school diploma, March 2020" }
+    },
+    {
+      "lane": "edu", "start": "2020-04", "end": "2024-03", "color": "#4de1ff",
+      "label": { "ja": "学部 (B.Sc.)", "en": "B.Sc." },
+      "title": { "ja": "広島大学 理学部 物理学科", "en": "Department of Physics, School of Science, Hiroshima University" },
+      "place": { "ja": "広島県東広島市", "en": "Higashi-Hiroshima, Japan" },
+      "note": { "ja": "2024年3月 学士（理学）", "en": "Bachelor of Science (Physics), March 2024" }
+    },
+    {
+      "lane": "edu", "start": "2024-04", "end": "2026-03", "color": "#5ef0a0",
+      "label": { "ja": "修士 (M.Sc.)", "en": "M.Sc." },
+      "title": { "ja": "広島大学大学院 先進理工系科学研究科 物理学プログラム 博士課程前期", "en": "Master's course, Physics Program, Graduate School of Advanced Science and Engineering, Hiroshima University" },
+      "place": { "ja": "広島県東広島市", "en": "Higashi-Hiroshima, Japan" },
+      "note": { "ja": "2026年3月 修士（理学）", "en": "Master of Science, March 2026" }
+    },
+    {
+      "lane": "edu", "start": "2026-04", "end": null, "color": "#ffb84d",
+      "label": { "ja": "博士 (Ph.D.)", "en": "Ph.D. course" },
+      "title": { "ja": "広島大学大学院 先進理工系科学研究科 物理学プログラム 博士課程後期", "en": "Doctoral course, Physics Program, Graduate School of Advanced Science and Engineering, Hiroshima University" },
+      "place": { "ja": "クォーク物理学研究室（指導教員：志垣 賢太 教授）", "en": "Quark Physics Laboratory (supervisor: Prof. Kenta Shigaki)" },
+      "note": { "ja": "在学中", "en": "Current" }
+    },
+    {
+      "lane": "research", "start": "2024-04", "end": null, "color": "#ff5ca8",
+      "label": { "ja": "WPI-SKCM² 研究員", "en": "WPI-SKCM² Researcher" },
+      "title": { "ja": "広島大学 キラルノット超物質国際研究所 (WPI-SKCM²) 研究員（大学院生）", "en": "Researcher (graduate student appointment), WPI-SKCM², Hiroshima University" },
+      "place": { "ja": "広島県東広島市", "en": "Higashi-Hiroshima, Japan" },
+      "note": { "ja": "大学院在学と兼任", "en": "Concurrent with graduate study" }
+    },
+    {
+      "lane": "fellow", "start": "2026-04", "end": "2029-03", "color": "#ffd166",
+      "label": { "ja": "次世代フェロー (JST SPRING)", "en": "Next-Generation Fellow (JST SPRING)" },
+      "title": { "ja": "広島大学 次世代研究者挑戦的研究プログラム 次世代フェロー（JST SPRING）", "en": "Next-Generation Fellow, Program for Developing and Supporting the Next-Generation of Innovative Researchers at Hiroshima University (JST SPRING)" },
+      "place": { "ja": "広島大学", "en": "Hiroshima University" },
+      "note": { "ja": "任期 2029年3月まで", "en": "Appointment through March 2029" }
+    },
+    {
+      "lane": "abroad", "start": "2024-11", "end": "2025-02", "color": "#4de1ff",
+      "label": { "ja": "BNL 滞在", "en": "BNL" },
+      "title": { "ja": "ブルックヘブン国立研究所 (BNL) 客員研究員", "en": "Visiting researcher, Brookhaven National Laboratory" },
+      "place": { "ja": "米国ニューヨーク州アプトン", "en": "Upton, NY, USA" },
+      "note": { "ja": "Ozaki Exchange Program（KEK 日米科学技術協力事業）。AC-LGAD 読み出し用フロントエンド ASIC の開発（2024.11.11–2025.2.8、修士課程在学中）", "en": "Ozaki Exchange Program (KEK US-Japan S&T Cooperation). Front-end ASIC development for AC-LGAD readout (11 Nov 2024 – 8 Feb 2025, during master's course)" }
+    },
+    {
+      "lane": "abroad", "start": "2027-01", "end": "2027-03", "color": "#4de1ff", "planned": true,
+      "label": { "ja": "BNL（予定）", "en": "BNL (planned)" },
+      "title": { "ja": "BNL Physics Division (ePIC) 客員研究員（予定）", "en": "Visiting researcher, Physics Division, BNL (ePIC) — planned" },
+      "place": { "ja": "米国ニューヨーク州アプトン", "en": "Upton, NY, USA" },
+      "note": { "ja": "Ozaki Exchange Program 2026", "en": "Ozaki Exchange Program 2026" }
+    }
+  ],
+
+  "theses": [
+    {
+      "date": "2026-03",
+      "degree": { "ja": "修士論文", "en": "M.Sc. thesis" },
+      "title": { "en": "Performance Evaluation System of AC-coupled Low Gain Avalanche Detector (AC-LGAD) for Precise 4D Tracking at the EIC-ePIC Experiment" },
+      "note": { "ja": "広島大学", "en": "Hiroshima University" }
+    },
+    {
+      "date": "2024-03",
+      "degree": { "ja": "卒業論文", "en": "B.Sc. thesis" },
+      "title": { "en": "Design of a performance evaluation system for new LGAD detectors and performance evaluation of the readout circuit for high spatiotemporal resolution measurements in the EIC ePIC experiment" },
+      "note": { "ja": "広島大学（日本語で執筆、題目は英訳）", "en": "Hiroshima University (written in Japanese; title translated)" }
+    }
+  ],
+
+  "publications": [
+    {
+      "authors": "K. Matsutani and K. Shigaki for the ePIC-Japan",
+      "title": "Performance evaluation system for AC-coupled low gain avalanche detector (AC-LGAD) for precise 4-dimensional tracking in EIC-ePIC experiment",
+      "venue": "RIKEN Accelerator Progress Report 2025",
+      "status": { "ja": "投稿予定", "en": "to be submitted" },
+      "url": ""
+    }
+  ],
+
+  "talks": [
+    {
+      "date": "2026-11", "scope": "intl", "type": "oral", "status": { "ja": "採択", "en": "accepted" },
+      "title": { "en": "From AC-LGAD Time Resolution to PID Reach at the EIC: Test-Beam and TCT Laser Studies for the ePIC Barrel Time-of-Flight" },
+      "venue": { "ja": "Asian Triangle Heavy-Ion Conference (ATHIC 2026)", "en": "Asian Triangle Heavy-Ion Conference (ATHIC 2026)" },
+      "place": { "ja": "中国・上海", "en": "Shanghai, China" }, "lat": 31.2304, "lng": 121.4737
+    },
+    {
+      "date": "2026-07", "scope": "intl", "type": "oral",
+      "title": { "en": "AC-LGAD sensor QA in Japan: new infrastructure & first laser results" },
+      "venue": { "ja": "July 2026 Joint ePIC/EICUG Meeting", "en": "July 2026 Joint ePIC/EICUG Meeting" },
+      "place": { "ja": "英国・グラスゴー大学", "en": "University of Glasgow, UK" }, "lat": 55.8721, "lng": -4.2882
+    },
+    {
+      "date": "2026-09", "scope": "domestic", "type": "oral", "spokenJa": true,
+      "title": { "en": "Temperature dependence of the timing response of AC-LGADs for the EIC-ePIC BTOF detector evaluated with an electron beam" },
+      "venue": { "ja": "日本物理学会 第81回年次大会", "en": "JPS 81st Annual Meeting" },
+      "place": { "ja": "東京大学 駒場キャンパス", "en": "The University of Tokyo (Komaba)" }, "lat": 35.6595, "lng": 139.6847,
+      "authors": "K. Matsutani et al. for ePIC-Japan"
+    },
+    {
+      "date": "2026-03", "scope": "domestic", "type": "oral", "spokenJa": true,
+      "title": { "en": "Basic characterization of strip-type AC-LGADs for the EIC-ePIC experiment" },
+      "venue": { "ja": "日本物理学会 2026年春季大会", "en": "JPS 2026 Spring Meeting" },
+      "place": { "ja": "オンライン", "en": "Online" },
+      "authors": "K. Matsutani, M. Kaneta, T. Gunji, K. Shigaki, T. Hachiya, S. Yano for ePIC-Japan"
+    },
+    {
+      "date": "2025-09", "scope": "domestic", "type": "oral",
+      "title": { "en": "Evaluation of AC-LGAD Time Resolution for Precision Particle Identification in the EIC-ePIC Experiment" },
+      "venue": { "ja": "HEHI-ex-J Workshop", "en": "HEHI-ex-J Workshop" },
+      "place": { "ja": "熊本", "en": "Kumamoto" }, "lat": 32.8031, "lng": 130.7079
+    },
+    {
+      "date": "2025-09", "scope": "domestic", "type": "oral", "spokenJa": true,
+      "title": { "en": "Evaluation of AC-LGAD time resolution for high spatiotemporal resolution measurements with particle identification detectors in the EIC-ePIC experiment" },
+      "venue": { "ja": "日本物理学会 第80回年次大会", "en": "JPS 80th Annual Meeting" },
+      "place": { "ja": "広島大学", "en": "Hiroshima University" }, "lat": 34.4021, "lng": 132.7131
+    },
+    {
+      "date": "2025-03", "scope": "domestic", "type": "oral", "spokenJa": true,
+      "title": { "en": "Development of an AC-LGAD system for high spatiotemporal resolution measurements with particle identification detectors in the EIC ePIC experiment" },
+      "venue": { "ja": "日本物理学会 2025年春季大会", "en": "JPS 2025 Spring Meeting" },
+      "place": { "ja": "オンライン", "en": "Online" }
+    },
+    {
+      "date": "2024-09", "scope": "domestic", "type": "oral", "spokenJa": true,
+      "title": { "en": "Performance evaluation of AC-LGAD detectors for high spatiotemporal resolution measurements in the EIC ePIC experiment" },
+      "venue": { "ja": "日本物理学会 第79回年次大会", "en": "JPS 79th Annual Meeting" },
+      "place": { "ja": "北海道大学", "en": "Hokkaido University" }, "lat": 43.0710, "lng": 141.3440
+    },
+    {
+      "date": "2024-08", "scope": "domestic", "type": "poster",
+      "title": { "en": "Performance evaluation of AC-LGAD detectors for high spatiotemporal resolution measurements in the EIC ePIC experiment" },
+      "venue": { "ja": "高エネルギー重イオン衝突の物理 チュートリアル研究会", "en": "Tutorial Workshop on the Physics of High-Energy Heavy-Ion Collisions" },
+      "place": { "ja": "大阪大学", "en": "Osaka University" }, "lat": 34.8064, "lng": 135.4555
+    },
+    {
+      "date": "2024-03", "scope": "domestic", "type": "poster", "spokenJa": true,
+      "title": { "en": "Performance evaluation methods and prospects of AC-LGAD detectors for high spatiotemporal resolution measurements at the EIC" },
+      "venue": { "ja": "日本物理学会 2024年春季大会", "en": "JPS 2024 Spring Meeting" },
+      "place": { "ja": "オンライン", "en": "Online" },
+      "authors": "K. Matsutani, K. Shigaki, S. Yano, P. Tribedy, A. Tricoli"
+    },
+    {
+      "date": "2023-09", "scope": "domestic", "type": "oral",
+      "title": { "en": "Performance evaluation method of new LGAD detector and prospects at Hiroshima University" },
+      "venue": { "ja": "ALICE/sPHENIX/STAR/EIC-J Workshop", "en": "ALICE/sPHENIX/STAR/EIC-J Workshop" },
+      "place": { "ja": "理化学研究所", "en": "RIKEN" }, "lat": 35.7807, "lng": 139.6100
+    },
+    {
+      "date": "2023-04", "scope": "intl", "type": "poster",
+      "title": { "en": "Simulation studies and R&D status and plans in Japan for the EIC ePIC Barrel TOF with AC-LGAD" },
+      "venue": { "ja": "The 9th Asian Triangle Heavy-Ion Conference (ATHIC 2023)", "en": "The 9th Asian Triangle Heavy-Ion Conference (ATHIC 2023)" },
+      "place": { "ja": "広島", "en": "Hiroshima, Japan" }, "lat": 34.3853, "lng": 132.4553,
+      "authors": "K. Matsutani, W. Yamauchi, Y. Akiba, Y. Goto, T. Hachiya, I. Nakagawa, K. Shigaki, S. Yano for the EIC Japan group"
+    }
+  ],
+
+  "awards": [
+    { "date": "2026-10", "icon": "✈️", "title": { "ja": "Ozaki Exchange Program 2026（KEK）採択", "en": "Ozaki Exchange Program 2026 (KEK), selected" } },
+    { "date": "2026-04", "icon": "🌱", "title": { "ja": "JST SPRING 次世代フェローシップ（広島大学、2026.4–2029.3）", "en": "Next-Generation Fellowship, JST SPRING at Hiroshima University (Apr 2026 – Mar 2029)" } },
+    { "date": "2026-03", "icon": "🏆", "title": { "ja": "優秀修士論文発表賞（広島大学 物理学プログラム）", "en": "Excellent Master's Thesis Presentation Award, Physics Program, Hiroshima University" } },
+    { "date": "2025-07", "icon": "🎓", "title": { "ja": "成績優秀者 授業料免除（博士課程前期・2025年度、広島大学）", "en": "Tuition exemption for outstanding master's students (FY2025), Hiroshima University" } },
+    { "date": "2025-03", "icon": "⭐", "title": { "ja": "博士課程進学奨励金 —「特に優秀な学生」として表彰（広島大学）", "en": "Doctoral Course Advancement Scholarship; commended as an “Especially Outstanding Student,” Hiroshima University" } },
+    { "date": "2024-09", "icon": "✈️", "title": { "ja": "Ozaki Exchange Program 2024（KEK）採択 — BNL 滞在 2024.11–2025.2", "en": "Ozaki Exchange Program 2024 (KEK), selected; research stay at BNL, Nov 2024 – Feb 2025" } }
+  ],
+
+  "visits": [
+    { "date": "2026-07", "kind": "meeting", "lat": 34.7108, "lng": 137.7261,
+      "title": { "ja": "浜松ホトニクス：AC-LGAD 性能報告・次期製造に向けた打ち合わせ", "en": "Hamamatsu Photonics K.K.: AC-LGAD performance report and next-production meeting" },
+      "place": { "ja": "静岡県浜松市", "en": "Hamamatsu, Japan" } },
+    { "date": "2026-05 – 2026-06", "kind": "beam", "lat": 36.1497, "lng": 140.0760,
+      "title": { "ja": "KEK ビームテスト：ePIC-ZDC 用ピクセル型 AC-LGAD、ePIC-TOF 用ストリップ型 AC-LGAD の温度依存性", "en": "KEK beam test: pixel-type AC-LGAD for ePIC-ZDC; temperature dependence of strip-type AC-LGAD for ePIC-TOF" },
+      "place": { "ja": "KEK（茨城県つくば市）", "en": "KEK, Tsukuba, Japan" } },
+    { "date": "2026-03", "kind": "school", "lat": 35.0285, "lng": 135.7859,
+      "title": { "ja": "YITP International School on EIC Physics", "en": "YITP International School on EIC Physics" },
+      "place": { "ja": "京都大学 基礎物理学研究所", "en": "Yukawa Institute for Theoretical Physics, Kyoto University" } },
+    { "date": "2026-02", "kind": "beam", "lat": 36.1497, "lng": 140.0760,
+      "title": { "ja": "KEK ビームテスト：DAQ 立ち上げ、ピクセル/ストリップ型 AC-LGAD と AstroPix のデータ取得", "en": "KEK beam test: DAQ commissioning; pixel/strip AC-LGAD and AstroPix data taking" },
+      "place": { "ja": "KEK（茨城県つくば市）", "en": "KEK, Tsukuba, Japan" } },
+    { "date": "2025-07", "kind": "meeting", "lat": 37.0966, "lng": -76.4813,
+      "title": { "ja": "EICUG & ePIC Joint Collaboration Meeting / Early Career Workshop", "en": "EICUG & ePIC Joint Collaboration Meeting and Early Career Workshop" },
+      "place": { "ja": "米国・ジェファーソン研究所", "en": "Jefferson Lab, USA" } },
+    { "date": "2025-06 – 2025-07", "kind": "school", "lat": 40.0546, "lng": 0.0640,
+      "title": { "ja": "2nd European School on the Physics of the EIC", "en": "2nd European School on the Physics of the EIC" },
+      "place": { "ja": "スペイン・ベニカシム", "en": "Benicàssim, Spain" } },
+    { "date": "2024-11 – 2025-02", "kind": "stay", "lat": 40.8695, "lng": -72.8868,
+      "title": { "ja": "BNL 滞在：AC-LGAD 読み出し用フロントエンド ASIC 開発", "en": "Research stay at BNL: front-end ASIC development for AC-LGAD readout" },
+      "place": { "ja": "米国・ブルックヘブン国立研究所", "en": "Brookhaven National Laboratory, USA" } },
+    { "date": "2024-07 – 2024-08", "kind": "school", "lat": 36.1497, "lng": 140.0760,
+      "title": { "ja": "Particle Physics Computing Summer School (PPCC-SS-2024, KEK)／WPI-SKCM² Summer School（北海道大学・広島大学）", "en": "Particle Physics Computing Summer School (PPCC-SS-2024), KEK; WPI-SKCM² Summer School (Hokkaido Univ./Hiroshima Univ.)" },
+      "place": { "ja": "KEK ほか", "en": "KEK and others" } },
+    { "date": "2024-01", "kind": "meeting", "lat": 22.9968, "lng": 120.2186,
+      "title": { "ja": "EIC-Asia Workshop", "en": "EIC-Asia Workshop" },
+      "place": { "ja": "台湾・国立成功大学", "en": "National Cheng Kung University, Taiwan" } },
+    { "date": "2022-12, 2023-08", "kind": "school", "lat": 36.1497, "lng": 140.0760,
+      "title": { "ja": "KEK：AC-LGAD テストベンチ構築・性能評価手法のトレーニング", "en": "KEK: training on AC-LGAD test-bench setup and performance evaluation methods" },
+      "place": { "ja": "KEK（茨城県つくば市）", "en": "KEK, Tsukuba, Japan" } }
+  ],
+
+  "memberships": [
+    { "ja": "ePIC Collaboration（Electron-Ion Collider）／ ePIC-Japan グループ", "en": "ePIC Collaboration (Electron-Ion Collider); ePIC-Japan group" }
+  ]
+}

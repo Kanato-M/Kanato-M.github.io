@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>Timing Challenge</title>
+<style>
+  :root { --bg:#0a0f1f; --fg:#e9eefb; --muted:#98a3c0; --c1:#4de1ff; --c2:#ff5ca8; --c3:#ffd166; --ok:#5ef0a0; }
+  * { box-sizing: border-box; }
+  html, body { margin:0; height:100%; background:var(--bg); color:var(--fg); font-family: Inter, "Noto Sans JP", system-ui, sans-serif; overflow:hidden; user-select:none; -webkit-user-select:none; touch-action:manipulation; }
+  #wrap { position:relative; height:100%; display:flex; flex-direction:column; }
+  header { display:flex; align-items:center; gap:.8rem; padding:.7rem 1rem; border-bottom:1px solid rgba(255,255,255,.1); }
+  header h1 { font-size:1rem; margin:0; flex:1; }
+  header .pill { font-family: ui-monospace, monospace; font-size:.8rem; color:var(--muted); }
+  button { font:inherit; cursor:pointer; border-radius:999px; border:1px solid rgba(255,255,255,.2); background:rgba(255,255,255,.06); color:var(--fg); padding:.45rem .9rem; }
+  button.primary { background:linear-gradient(90deg,var(--c1),var(--c2)); color:#07101f; border:0; font-weight:800; padding:.7rem 1.4rem; font-size:1rem; }
+  #stage { position:relative; flex:1; min-height:200px; cursor:pointer; }
+  #c { position:absolute; inset:0; width:100%; height:100%; display:block; }
+  .overlay { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:1.5rem; gap:.8rem; background:rgba(10,15,31,.82); }
+  .overlay.hidden { display:none; }
+  .overlay h2 { margin:0; font-size:clamp(1.4rem,4vw,2.2rem); }
+  .overlay p { margin:0; color:var(--muted); max-width:34rem; line-height:1.7; }
+  .big { font-size:clamp(2.4rem,9vw,4.4rem); font-weight:900; font-family: ui-monospace, monospace; background:linear-gradient(90deg,var(--c1),var(--c2)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .rank { font-size:1.2rem; font-weight:800; color:var(--c3); }
+  #hist { width:min(520px,90vw); height:150px; }
+  #msg { position:absolute; left:0; right:0; top:14%; text-align:center; font-weight:800; font-size:clamp(1.2rem,4vw,1.8rem); pointer-events:none; text-shadow:0 2px 12px rgba(0,0,0,.6); }
+  #hint { position:absolute; left:0; right:0; bottom:.8rem; text-align:center; color:var(--muted); font-size:.85rem; pointer-events:none; }
+  .row { display:flex; gap:.6rem; flex-wrap:wrap; justify-content:center; }
+  .stats { display:flex; gap:1.4rem; flex-wrap:wrap; justify-content:center; font-family:ui-monospace,monospace; font-size:.9rem; color:var(--muted); }
+  .stats b { color:var(--fg); }
+  [data-l="en"] .ja, [data-l="ja"] .en { display:none; }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <header>
+    <h1>⏱️ <span class="ja">タイミング・チャレンジ</span><span class="en">Timing Challenge</span></h1>
+    <span class="pill" id="shot"></span>
+    <button id="lang" type="button">JA / EN</button>
+  </header>
+  <div id="stage">
+    <canvas id="c"></canvas>
+    <div id="msg"></div>
+    <div id="hint"><span class="ja">クリック / タップ / スペースキー</span><span class="en">Click / tap / space bar</span></div>
+
+    <div class="overlay" id="intro">
+      <h2><span class="ja">あなたの「時間分解能」は？</span><span class="en">What's your time resolution?</span></h2>
+      <p><span class="ja">粒子がセンサー（光る縦線）を通過する<b>その瞬間</b>にタップしてください。全10発。後半の5発は粒子が途中で<b>見えなくなります</b>。ズレのばらつき σ が、あなたの時間分解能です。</span>
+        <span class="en">Tap at the <b>exact moment</b> the particle crosses the sensor (the glowing line). 10 shots. In the last 5 the particle <b>turns invisible</b> halfway. The spread σ of your errors is your time resolution.</span></p>
+      <p class="stats" id="best"></p>
+      <button class="primary" id="start" type="button"><span class="ja">スタート</span><span class="en">Start</span></button>
+    </div>
+
+    <div class="overlay hidden" id="result">
+      <p><span class="ja">あなたの時間分解能</span><span class="en">Your time resolution</span></p>
+      <div class="big" id="sigma"></div>
+      <div class="rank" id="rank"></div>
+      <canvas id="hist"></canvas>
+      <div class="stats" id="rstats"></div>
+      <p id="compare"></p>
+      <div class="row">
+        <button class="primary" id="again" type="button"><span class="ja">もう一回</span><span class="en">Play again</span></button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+(function () {
+  "use strict";
+  var lang;
+  try { lang = localStorage.getItem("lang"); } catch (e) {}
+  lang = lang || ((navigator.language || "").toLowerCase().indexOf("ja") === 0 ? "ja" : "en");
+  function setLang(l) { lang = l; document.body.setAttribute("data-l", l); document.documentElement.lang = l; try { localStorage.setItem("lang", l); } catch (e) {} if (state === "done") showResult(); if (window.__best) window.__best(); }
+  window.addEventListener("storage", function (e) { if (e.key === "lang" && e.newValue) setLang(e.newValue); });
+  document.getElementById("lang").addEventListener("click", function (e) { e.stopPropagation(); setLang(lang === "ja" ? "en" : "ja"); });
+  var T = function (ja, en) { return lang === "ja" ? ja : en; };
+
+  var cv = document.getElementById("c"), ctx = cv.getContext("2d");
+  var stage = document.getElementById("stage");
+  var W = 0, H = 0;
+  function size() {
+    var r = stage.getBoundingClientRect(), d = Math.min(window.devicePixelRatio || 1, 2);
+    W = r.width; H = r.height; cv.width = W * d; cv.height = H * d; ctx.setTransform(d, 0, 0, d, 0, 0);
+  }
+  window.addEventListener("resize", size); size();
+
+  var SHOTS = 10, GHOST_FROM = 5, MISS_MS = 350;
+  var state = "intro", shot = 0, errors = [], misses = 0;
+  var p = null; // current particle {t0, v, x0, xs, tc, ghost, pressed}
+  var msgEl = document.getElementById("msg"), shotEl = document.getElementById("shot");
+  var trail = [];
+
+  function sensorX() { return W * 0.68; }
+  function launch() {
+    var dur = 650 + Math.random() * 900; // ms to reach the sensor
+    var x0 = -20, xs = sensorX();
+    var t0 = performance.now() + 700 + Math.random() * 900;
+    p = { t0: t0, x0: x0, xs: xs, v: (xs - x0) / dur, tc: t0 + dur, ghost: shot >= GHOST_FROM, pressed: false };
+    trail = [];
+    state = "flying";
+    shotEl.textContent = (shot + 1) + " / " + SHOTS + (p.ghost ? " 👻" : "");
+    msgEl.textContent = p.ghost ? T("👻 ゴースト：途中で消えます", "👻 Ghost: it will vanish") : "";
+    msgEl.style.color = "var(--muted)";
+  }
+
+  function press(ts) {
+    if (state !== "flying" || !p || p.pressed) return;
+    var now = performance.now();
+    if (now < p.t0) { // pressed before launch: false start
+      msgEl.textContent = T("フライング！", "False start!"); msgEl.style.color = "var(--c2)";
+      p.t0 += 600; p.tc += 600; return;
+    }
+    p.pressed = true;
+    var t = (ts && Math.abs(ts - now) < 1000) ? ts : now;
+    var err = t - p.tc;
+    errors.push(err);
+    var s = (err >= 0 ? "+" : "−") + Math.abs(err).toFixed(0) + " ms";
+    msgEl.textContent = s + "  " + (Math.abs(err) < 10 ? T("ドンピシャ！", "Spot on!") : err < 0 ? T("早い", "early") : T("遅い", "late"));
+    msgEl.style.color = Math.abs(err) < 10 ? "var(--ok)" : Math.abs(err) < 40 ? "var(--c3)" : "var(--c2)";
+    next();
+  }
+  function next() {
+    shot++;
+    state = "between";
+    setTimeout(function () { if (shot >= SHOTS) finish(); else launch(); }, 900);
+  }
+
+  stage.addEventListener("pointerdown", function (e) { if (e.target.closest("button")) return; press(e.timeStamp); });
+  document.addEventListener("keydown", function (e) {
+    if (e.code === "Space" || e.key === " " || e.key === "Enter") {
+      e.preventDefault();
+      if (state === "intro" || state === "done") { start(); return; }
+      if (!e.repeat) press(e.timeStamp);
+    }
+  });
+
+  function start() {
+    document.getElementById("intro").classList.add("hidden");
+    document.getElementById("result").classList.add("hidden");
+    shot = 0; errors = []; misses = 0; launch();
+  }
+  document.getElementById("start").addEventListener("click", function (e) { e.stopPropagation(); start(); });
+  document.getElementById("again").addEventListener("click", function (e) { e.stopPropagation(); start(); });
+
+  function stats(a) {
+    var n = a.length; if (!n) return { mean: 0, sd: 0 };
+    var m = a.reduce(function (s, x) { return s + x; }, 0) / n;
+    var v = a.reduce(function (s, x) { return s + (x - m) * (x - m); }, 0) / Math.max(1, n - 1);
+    return { mean: m, sd: Math.sqrt(v) };
+  }
+  function rank(sd) {
+    if (sd < 10) return T("🏆 人間 LGAD 級", "🏆 Human-LGAD class");
+    if (sd < 20) return T("🥇 光電子増倍管 級", "🥇 Photomultiplier class");
+    if (sd < 35) return T("🥈 シンチレーター 級", "🥈 Scintillator class");
+    if (sd < 60) return T("🥉 ストップウォッチ 級", "🥉 Stopwatch class");
+    return T("🌞 日時計 級", "🌞 Sundial class");
+  }
+  function fmtBig(x) {
+    if (lang === "ja") {
+      if (x >= 1e8) return (x / 1e8).toFixed(1) + " 億";
+      if (x >= 1e4) return (x / 1e4).toFixed(0) + " 万";
+      return Math.round(x).toString();
+    }
+    if (x >= 1e9) return (x / 1e9).toFixed(1) + " billion";
+    if (x >= 1e6) return (x / 1e6).toFixed(0) + " million";
+    return Math.round(x).toString();
+  }
+
+  var last = null;
+  function finish() {
+    state = "done"; shotEl.textContent = ""; msgEl.textContent = "";
+    var s = stats(errors);
+    last = s;
+    var best = null; try { best = parseFloat(localStorage.getItem("tc-best")); } catch (e) {}
+    if (errors.length >= 3 && (!best || s.sd < best)) { try { localStorage.setItem("tc-best", s.sd.toFixed(1)); } catch (e) {} }
+    showResult();
+    window.__best();
+  }
+  function showResult() {
+    var s = last; if (!s) return;
+    document.getElementById("result").classList.remove("hidden");
+    document.getElementById("sigma").textContent = errors.length >= 2 ? "σ = " + s.sd.toFixed(1) + " ms" : "—";
+    document.getElementById("rank").textContent = errors.length >= 2 ? rank(s.sd) : T("記録不足…", "Not enough hits…");
+    var vis = errors.slice(0, GHOST_FROM), gh = errors.slice(GHOST_FROM);
+    document.getElementById("rstats").innerHTML =
+      T("平均のずれ", "Mean offset") + " <b>" + (s.mean >= 0 ? "+" : "") + s.mean.toFixed(1) + " ms</b> · " +
+      T("見える", "Visible") + " σ <b>" + stats(vis).sd.toFixed(1) + "</b> · " + T("ゴースト", "Ghost") + " σ <b>" + stats(gh).sd.toFixed(1) + "</b>" +
+      (misses ? " · " + T("ミス", "Missed") + " <b>" + misses + "</b>" : "");
+    var ratio = s.sd * 1e-3 / 30e-12;
+    document.getElementById("compare").innerHTML = T(
+      "AC-LGAD の時間分解能は約 30 ピコ秒。あなたより約 <b>" + fmtBig(ratio) + "倍</b> 正確です。平均のずれは、実際の検出器でいう「タイムウォーク（系統的な遅れ）」のようなもの。補正すれば消せますが、ばらつき σ は消せません。",
+      "An AC-LGAD resolves about 30 picoseconds — roughly <b>" + fmtBig(ratio) + " times</b> better than you. Your mean offset is like a detector's “time walk”: a systematic shift you can calibrate away. The spread σ, however, stays.");
+    drawHist(s);
+  }
+  function drawHist(s) {
+    var c = document.getElementById("hist"), x = c.getContext("2d");
+    var r = c.getBoundingClientRect(), d = Math.min(window.devicePixelRatio || 1, 2);
+    c.width = r.width * d; c.height = r.height * d; x.setTransform(d, 0, 0, d, 0, 0);
+    var w = r.width, h = r.height, lo = -150, hi = 150, bins = 15, bw = (hi - lo) / bins;
+    var counts = new Array(bins).fill(0);
+    errors.forEach(function (e) { var i = Math.floor((Math.max(lo, Math.min(hi - 0.01, e)) - lo) / bw); counts[i]++; });
+    var maxC = Math.max(1, Math.max.apply(null, counts));
+    x.clearRect(0, 0, w, h);
+    var X = function (t) { return 10 + (t - lo) / (hi - lo) * (w - 20); };
+    var base = h - 20;
+    counts.forEach(function (n, i) {
+      var bh = n / maxC * (base - 10);
+      x.fillStyle = "rgba(77,225,255,.6)";
+      x.fillRect(X(lo + i * bw) + 1, base - bh, (w - 20) / bins - 2, bh);
+    });
+    if (errors.length >= 2 && s.sd > 0) {
+      x.beginPath();
+      for (var i = 0; i <= 150; i++) {
+        var t = lo + (hi - lo) * i / 150;
+        var y = Math.exp(-0.5 * Math.pow((t - s.mean) / s.sd, 2)) * errors.length * bw / (s.sd * Math.sqrt(2 * Math.PI));
+        var py = base - y / maxC * (base - 10);
+        if (i) x.lineTo(X(t), py); else x.moveTo(X(t), py);
+      }
+      x.strokeStyle = "#ff5ca8"; x.lineWidth = 2; x.stroke();
+    }
+    x.strokeStyle = "rgba(255,255,255,.3)"; x.beginPath(); x.moveTo(10, base); x.lineTo(w - 10, base); x.moveTo(X(0), base); x.lineTo(X(0), 6); x.stroke();
+    x.fillStyle = "#98a3c0"; x.font = "11px ui-monospace, monospace"; x.textAlign = "center";
+    [-150, -100, -50, 0, 50, 100, 150].forEach(function (t) { x.fillText((t > 0 ? "+" : "") + t, X(t), h - 5); });
+  }
+
+  function loop(now) {
+    ctx.clearRect(0, 0, W, H);
+    var cy = H * 0.55, xs = sensorX();
+    // beam pipe
+    ctx.strokeStyle = "rgba(255,255,255,.08)"; ctx.lineWidth = 26;
+    ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(W, cy); ctx.stroke();
+    // sensor
+    var flash = p && p.pressed ? Math.max(0, 1 - (now - p.tc) / 400) : 0;
+    ctx.fillStyle = "rgba(77,225,255," + (0.35 + 0.5 * flash) + ")";
+    ctx.fillRect(xs - 3, cy - 70, 6, 140);
+    ctx.shadowColor = "#4de1ff"; ctx.shadowBlur = 20;
+    ctx.fillStyle = "#4de1ff"; ctx.fillRect(xs - 1, cy - 70, 2, 140); ctx.shadowBlur = 0;
+    ctx.fillStyle = "#98a3c0"; ctx.font = "12px ui-monospace, monospace"; ctx.textAlign = "center";
+    ctx.fillText("AC-LGAD", xs, cy - 80);
+    if (p && state !== "intro") {
+      var x = p.x0 + p.v * (now - p.t0);
+      var ghostX = p.x0 + (p.xs - p.x0) * 0.45;
+      if (now >= p.t0 && x < W + 30) {
+        var show = !p.ghost || x < ghostX;
+        if (show) {
+          trail.push(x); if (trail.length > 14) trail.shift();
+          for (var i = 0; i < trail.length; i++) {
+            ctx.globalAlpha = i / trail.length * 0.5;
+            ctx.fillStyle = "#ff5ca8"; ctx.beginPath(); ctx.arc(trail[i], cy, 5, 0, Math.PI * 2); ctx.fill();
+          }
+          ctx.globalAlpha = 1;
+          ctx.shadowColor = "#ff5ca8"; ctx.shadowBlur = 18;
+          ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(x, cy, 8, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0;
+        } else if (x < ghostX + 40) {
+          ctx.globalAlpha = Math.max(0, 1 - (x - ghostX) / 40);
+          ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(x, cy, 8, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1;
+        }
+      }
+      if (p.pressed) {
+        // show where the particle really was at the press (true crossing marker)
+        ctx.fillStyle = "rgba(94,240,160,.9)"; ctx.beginPath(); ctx.arc(xs, cy, 5, 0, Math.PI * 2); ctx.fill();
+      }
+      if (state === "flying" && !p.pressed && now > p.tc + MISS_MS) {
+        misses++; p.pressed = true;
+        msgEl.textContent = T("ミス！（反応なし）", "Missed!"); msgEl.style.color = "var(--c2)";
+        next();
+      }
+    }
+    requestAnimationFrame(loop);
+  }
+
+  window.__best = function () {
+    var best = null; try { best = localStorage.getItem("tc-best"); } catch (e) {}
+    document.getElementById("best").innerHTML = best ? T("自己ベスト", "Personal best") + ": <b>σ = " + best + " ms</b>" : "";
+  };
+  setLang(lang);
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

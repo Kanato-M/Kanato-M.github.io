@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ja" data-root="../../" data-title-ja="ゲーム・パズル | 松谷 奏" data-title-en="Games & Puzzles | Kanato Matsutani">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ゲーム・パズル | 松谷 奏</title>
+  <meta name="description" content="Games and puzzles made by Kanato Matsutani — playable in the browser.">
+  <link rel="icon" href="../../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <script src="../../assets/js/main.js"></script>
+</head>
+<body data-page="games" class="sec-games">
+<main>
+  <header class="page-hero">
+    <div class="container">
+      <p class="eyebrow">Game archive</p>
+      <h1><span lang="ja">ゲーム・パズル保管庫</span><span lang="en">Games &amp; puzzles</span></h1>
+      <p class="lead"><span lang="ja">自作のゲームやパズルを置いています。すべてブラウザでそのまま遊べます。</span>
+        <span lang="en">Games and puzzles I've made. Everything runs right in your browser.</span></p>
+    </div>
+  </header>
+  <section style="padding-top:0">
+    <div class="container">
+      <div style="display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;justify-content:space-between;margin-bottom:1.2rem">
+        <div class="chips" id="g-filter"></div>
+        <a class="btn btn-sm btn-ghost" href="../../admin/index.html#games">✏️ <span lang="ja">追加・編集</span><span lang="en">Add / edit</span></a>
+      </div>
+      <div class="game-grid" id="g-grid"></div>
+    </div>
+  </section>
+</main>
+
+<div class="game-modal" id="g-modal" role="dialog" aria-modal="true">
+  <div class="game-frame-wrap">
+    <div class="game-frame-bar">
+      <strong id="g-title"></strong>
+      <a class="btn btn-sm" id="g-newtab" href="#" target="_blank" rel="noopener">↗ <span lang="ja">新しいタブ</span><span lang="en">New tab</span></a>
+      <button class="btn btn-sm" type="button" id="g-close">✕</button>
+    </div>
+    <iframe id="g-frame" title="Game" allow="fullscreen; autoplay; gamepad"></iframe>
+  </div>
+</div>
+<script src="../../assets/js/games.js"></script>
+</body>
+</html>

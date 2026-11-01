@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="ja" data-root="../" data-title-ja="研究内容 | 松谷 奏" data-title-en="Research | Kanato Matsutani">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>研究内容 | 松谷 奏</title>
+  <meta name="description" content="The origin of mass, the Electron-Ion Collider (EIC) and AC-LGAD timing detectors — explained for newcomers.">
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <script src="../assets/js/main.js"></script>
+</head>
+<body data-page="research" class="sec-research">
+<main>
+  <header class="page-hero">
+    <div class="container">
+      <p class="eyebrow">Research</p>
+      <h1><span lang="ja">陽子の中を、<span class="grad">ピコ秒</span>で覗く。</span><span lang="en">Peering inside the proton, <span class="grad">picosecond</span> by picosecond.</span></h1>
+      <p class="lead">
+        <span lang="ja">私たちの体の重さは、ほとんどが陽子と中性子の重さです。でもその重さの <strong>99%</strong> は、実は「中身の粒子の重さ」ではありません。この謎に迫る巨大実験 <strong>EIC</strong> と、そのために私が開発している 1兆分の1秒を刻む検出器 <strong>AC-LGAD</strong> を、はじめての人にもわかるように紹介します。</span>
+        <span lang="en">Almost all of your weight comes from protons and neutrons — yet <strong>99%</strong> of a proton's mass is <em>not</em> the mass of what it's made of. Here is a beginner-friendly tour of that puzzle, of the giant <strong>EIC</strong> experiment built to solve it, and of the <strong>AC-LGAD</strong> — a sensor that ticks in trillionths of a second — which I develop for it.</span>
+      </p>
+      <nav class="story-nav" aria-label="Sections">
+        <a class="chip" href="#mass">① <span lang="ja">質量の起源</span><span lang="en">Origin of mass</span></a>
+        <a class="chip" href="#eic">② EIC / ePIC</a>
+        <a class="chip" href="#aclgad">③ AC-LGAD</a>
+        <a class="chip" href="#tof">④ <span lang="ja">体験：粒子識別</span><span lang="en">Try it: particle ID</span></a>
+        <a class="chip" href="#work">⑤ <span lang="ja">私の仕事</span><span lang="en">My work</span></a>
+        <a class="chip" href="#links">⑥ <span lang="ja">リンク</span><span lang="en">Links</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- 1. MASS -->
+  <section id="mass">
+    <div class="container story">
+      <div class="reveal">
+        <span class="step-num">01 / <span lang="ja">なぜ？</span><span lang="en">Why?</span></span>
+        <h2><span lang="ja">陽子の重さは、どこから来る？</span><span lang="en">Where does the proton's mass come from?</span></h2>
+        <p><span lang="ja">陽子は 3つの<strong>クォーク</strong>（アップ・アップ・ダウン）からできています。2012年に発見された<strong>ヒッグス粒子</strong>は、クォークのような素粒子に質量を与える仕組みとして有名です。</span>
+          <span lang="en">A proton is made of three <strong>quarks</strong> (up, up, down). The <strong>Higgs boson</strong>, discovered in 2012, is famous for giving elementary particles like quarks their mass.</span></p>
+        <p><span lang="ja">ところが、3つのクォークの質量を足しても約 <strong>9 MeV</strong>。陽子の質量 <strong>938 MeV</strong> のわずか <strong>1% ほど</strong>にしかなりません。</span>
+          <span lang="en">But add up the three quark masses and you get only about <strong>9 MeV</strong> — roughly <strong>1%</strong> of the proton's <strong>938 MeV</strong>.</span></p>
+        <div class="mass-bar reveal" aria-label="Proton mass budget">
+          <div class="higgs" title="Higgs ~1%"></div>
+          <div class="qcd"><span lang="ja">強い力（グルーオン・クォークの運動）≈ 99%</span><span lang="en">Strong force (gluons &amp; quark motion) ≈ 99%</span></div>
+        </div>
+        <div class="mass-legend"><span>■ <span lang="ja">ヒッグス機構によるクォーク質量 ≈ 1%</span><span lang="en">Quark masses from the Higgs ≈ 1%</span></span><span>m<sub>p</sub> = 938 MeV/c²</span></div>
+        <p style="margin-top:1rem"><span lang="ja">残りの 99% は、クォーク同士を結びつける<strong>「強い力」</strong>から生まれます。力を伝える<strong>グルーオン</strong>の場のエネルギーや、狭い空間に閉じ込められたクォークが激しく動き回るエネルギーが、<strong>E = mc²</strong> によって質量として現れているのです。</span>
+          <span lang="en">The other 99% comes from the <strong>strong force</strong> that binds quarks together. The energy stored in the <strong>gluon</strong> field, and the frantic motion of quarks confined in a tiny space, show up as mass through <strong>E = mc²</strong>.</span></p>
+        <div class="analogy"><strong><span lang="ja">たとえるなら</span><span lang="en">Think of it like this</span></strong> —
+          <span lang="ja">部品はとても軽いのに、中でばねがピンと張り、玉が猛スピードで跳ね回っているせいで重くなっている箱。陽子の重さは「部品」ではなく「動きとつながり」の重さなんです。</span>
+          <span lang="en">a box whose parts weigh almost nothing, but which is heavy because tight springs and balls bouncing at enormous speed are packed inside. The proton's mass is the mass of motion and binding, not of parts.</span></div>
+        <p><span lang="ja">では、そのエネルギーは<em>どのように</em>分配されているのか？ — これはまだ実験で確かめられていない、現代物理の大きな問いです。</span>
+          <span lang="en">So <em>how</em> exactly is that energy shared out? That is still an open question that experiments have yet to answer.</span></p>
+      </div>
+      <figure class="fig reveal">
+        <div id="proton-fig"></div>
+        <figcaption><span lang="ja">陽子のイメージ：3つのクォーク（色はクォークの「色荷」）と、それをつなぐグルーオン（ばね）。実際には、クォークと反クォークの対が絶えず生まれては消えています。</span>
+          <span lang="en">A cartoon proton: three quarks (colours stand for “colour charge”) tied together by gluons (springs). In reality quark–antiquark pairs constantly pop in and out of existence.</span></figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- 2. EIC -->
+  <section id="eic">
+    <div class="container story flip">
+      <div class="reveal">
+        <span class="step-num">02 / <span lang="ja">どうやって？</span><span lang="en">How?</span></span>
+        <h2><span lang="ja">EIC — 陽子のための「超・電子顕微鏡」</span><span lang="en">The EIC — a super electron microscope for the proton</span></h2>
+        <p><span lang="ja"><strong>EIC（Electron-Ion Collider：電子・イオン衝突型加速器）</strong>は、米国ブルックヘブン国立研究所 (BNL) に建設中の次世代の加速器です。光の速さ近くまで加速した<strong>電子</strong>を、<strong>陽子や原子核</strong>に正面衝突させます。</span>
+          <span lang="en">The <strong>Electron-Ion Collider (EIC)</strong> is a next-generation accelerator under construction at Brookhaven National Laboratory (BNL) in the US. It smashes <strong>electrons</strong> moving at nearly the speed of light head-on into <strong>protons and nuclei</strong>.</span></p>
+        <p><span lang="ja">電子は内部構造をもたない「点」の粒子なので、陽子の中を鮮明に照らす探針になります。散乱された電子と、飛び出してきた粒子を詳しく調べることで、陽子の中のクォークやグルーオンが<strong>どこに・どれだけの速さで・どんな向きに回転して</strong>いるのかを 3次元的に描き出します。</span>
+          <span lang="en">Electrons have no inner structure — they are point-like — so they make a clean probe. By measuring the scattered electron and everything that flies out, the EIC will map in 3D <strong>where</strong> quarks and gluons sit inside the proton, <strong>how fast</strong> they move and <strong>how they spin</strong>.</span></p>
+        <div class="grid grid-2" style="margin:1.2rem 0">
+          <div class="card" style="padding:1rem 1.2rem"><strong>⚖️ <span lang="ja">質量の起源</span><span lang="en">Origin of mass</span></strong><p class="muted small" style="margin:.3rem 0 0"><span lang="ja">陽子の質量の内訳を実験で決める</span><span lang="en">Measure how the proton's mass is built up</span></p></div>
+          <div class="card" style="padding:1rem 1.2rem"><strong>🌀 <span lang="ja">スピンの起源</span><span lang="en">Origin of spin</span></strong><p class="muted small" style="margin:.3rem 0 0"><span lang="ja">クォークのスピンだけでは陽子のスピンを説明できない謎</span><span lang="en">Quark spins alone don't add up to the proton's spin</span></p></div>
+          <div class="card" style="padding:1rem 1.2rem"><strong>🌊 <span lang="ja">グルーオンの海</span><span lang="en">Gluon saturation</span></strong><p class="muted small" style="margin:.3rem 0 0"><span lang="ja">グルーオンが飽和する未知の高密度状態を探る</span><span lang="en">Hunt for a dense, saturated state of gluons</span></p></div>
+          <div class="card" style="padding:1rem 1.2rem"><strong>🔭 <span lang="ja">原子核の中</span><span lang="en">Inside nuclei</span></strong><p class="muted small" style="margin:.3rem 0 0"><span lang="ja">原子核の中で陽子の姿はどう変わる？</span><span lang="en">How do protons change when packed into a nucleus?</span></p></div>
+        </div>
+        <p><span lang="ja">EIC の最初の検出器をつくるのが、世界中の研究者が参加する国際共同実験 <strong>ePIC</strong>。私は ePIC-Japan の一員として、粒子の種類を見分けるための検出器を開発しています。EIC は 2030年代の実験開始を目指しています。</span>
+          <span lang="en">The first EIC detector is being built by <strong>ePIC</strong>, an international collaboration of researchers from around the world. As part of ePIC-Japan I develop the detector that tells particle species apart. The EIC aims to start physics in the 2030s.</span></p>
+      </div>
+      <figure class="fig reveal">
+        <svg viewBox="0 0 400 260" role="img" aria-label="EIC collider schematic">
+          <defs>
+            <radialGradient id="ipglow"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+          </defs>
+          <path id="ringE" d="M200,40 C320,40 380,80 380,130 C380,180 320,220 200,220 C80,220 20,180 20,130 C20,80 80,40 200,40 Z" fill="none" stroke="var(--c-research)" stroke-width="3" opacity=".8"/>
+          <path id="ringH" d="M200,40 C80,40 26,84 26,130 C26,176 80,214 200,214 C320,214 374,176 374,130 C374,84 320,40 200,40 Z" fill="none" stroke="var(--c-games)" stroke-width="3" opacity=".8" stroke-dasharray="2 5"/>
+          <circle r="6" fill="var(--c-research)"><animateMotion dur="3s" repeatCount="indefinite"><mpath href="#ringE"/></animateMotion></circle>
+          <circle r="9" fill="var(--c-games)"><animateMotion dur="3s" repeatCount="indefinite"><mpath href="#ringH"/></animateMotion></circle>
+          <circle cx="200" cy="40" r="26" fill="url(#ipglow)"><animate attributeName="r" values="8;30;8" dur="1.5s" repeatCount="indefinite"/></circle>
+          <rect x="172" y="22" width="56" height="36" rx="8" fill="var(--bg-2)" stroke="var(--text)" stroke-width="1.5"/>
+          <text x="200" y="45" text-anchor="middle" font-size="13" font-weight="800" fill="var(--text)">ePIC</text>
+          <text x="200" y="128" text-anchor="middle" font-size="15" font-weight="800" fill="var(--text)">EIC @ BNL</text>
+          <text x="200" y="150" text-anchor="middle" font-size="11" fill="var(--muted)"><tspan lang="ja">周長 約3.8 km</tspan><tspan lang="en">~3.8 km circumference</tspan></text>
+          <g font-size="12" font-weight="700">
+            <circle cx="40" cy="244" r="5" fill="var(--c-research)"/><text x="50" y="248" fill="var(--text)"><tspan lang="ja">電子 5–18 GeV</tspan><tspan lang="en">electrons 5–18 GeV</tspan></text>
+            <circle cx="220" cy="244" r="7" fill="var(--c-games)"/><text x="232" y="248" fill="var(--text)"><tspan lang="ja">陽子 41–275 GeV</tspan><tspan lang="en">protons 41–275 GeV</tspan></text>
+          </g>
+        </svg>
+        <figcaption><span lang="ja">EIC の模式図。電子のリングと陽子・原子核のリングが交差する点に ePIC 検出器が置かれます（既存の加速器 RHIC のトンネルを再利用）。</span>
+          <span lang="en">Schematic of the EIC: the electron ring and the proton/ion ring cross where the ePIC detector sits (the tunnel of the existing RHIC collider is reused).</span></figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- 3. AC-LGAD -->
+  <section id="aclgad">
+    <div class="container story">
+      <div class="reveal">
+        <span class="step-num">03 / <span lang="ja">私の検出器</span><span lang="en">My detector</span></span>
+        <h2><span lang="ja">AC-LGAD — 1兆分の1秒を刻むシリコン</span><span lang="en">AC-LGAD — silicon that ticks in picoseconds</span></h2>
+        <p><span lang="ja">衝突で飛び出した粒子が<strong>何者か</strong>（π中間子？ K中間子？ 陽子？）を見分けることは、EIC の物理にとって欠かせません。その方法の一つが<strong>飛行時間 (Time-of-Flight, TOF) 測定</strong>です。同じ勢い（運動量）なら<strong>重い粒子ほど遅い</strong>ので、決まった距離を飛ぶのにかかる時間を測れば質量がわかります。</span>
+          <span lang="en">Knowing <strong>what</strong> each outgoing particle is (a pion? a kaon? a proton?) is essential for EIC physics. One way is <strong>time-of-flight (TOF)</strong>: at the same momentum, <strong>heavier particles are slower</strong>, so timing their flight over a known distance reveals their mass.</span></p>
+        <p><span lang="ja">ただし、その差はわずか<strong>数百ピコ秒</strong>（1 ps = 1兆分の1秒）。光でさえ 1 ps では 0.3 mm しか進みません。そこで必要になるのが、<strong>約 30 ps</strong> の精度で時刻を刻めるセンサー、<strong>AC-LGAD</strong> です。</span>
+          <span lang="en">But the differences are only a <strong>few hundred picoseconds</strong> (1 ps = 10⁻¹² s) — light itself travels just 0.3 mm in 1 ps. That calls for a sensor that can timestamp particles to about <strong>30 ps</strong>: the <strong>AC-LGAD</strong>.</span></p>
+
+        <h3><span lang="ja">しくみ① LGAD：信号を「なだれ」で増やす</span><span lang="en">Idea ① LGAD: amplify the signal with an avalanche</span></h3>
+        <p><span lang="ja">粒子がシリコンを通ると、電子と正孔のペアが生まれます。LGAD (Low Gain Avalanche Detector) は、表面近くに薄い<strong>増幅層</strong>をもち、そこで電子が<strong>なだれのように 10〜30 倍</strong>に増えます。センサーを約 50 µm と薄くすることで、大きく<strong>鋭い</strong>信号になり、時刻をピタリと決められます。</span>
+          <span lang="en">A charged particle crossing silicon frees electron–hole pairs. An LGAD (Low Gain Avalanche Detector) has a thin <strong>gain layer</strong> near the surface where electrons <strong>avalanche</strong>, multiplying 10–30×. Combined with a thin (~50 µm) sensor this gives a large, <strong>sharp</strong> pulse whose arrival time can be pinned down precisely.</span></p>
+
+        <h3><span lang="ja">しくみ② AC 結合：隣の電極との「分け前」で位置を知る</span><span lang="en">Idea ② AC coupling: find the position from how the signal is shared</span></h3>
+        <p><span lang="ja">AC-LGAD は増幅層をセンサー全面に広げ、読み出し電極を薄い絶縁膜の上に置いて<strong>容量結合 (AC)</strong> で信号を取り出します。信号は隣り合う複数の電極に分かれて現れるので、その<strong>比</strong>から電極の間隔よりずっと細かく通過位置がわかります。時刻と位置を同時に測る <strong>「4D トラッキング」</strong>です。</span>
+          <span lang="en">An AC-LGAD spreads the gain layer over the whole sensor and reads it out through metal electrodes on a thin insulator — <strong>capacitive (AC) coupling</strong>. The signal is shared between neighbouring electrodes, and the <strong>ratio</strong> pinpoints the hit far more finely than the electrode spacing. Time plus position: <strong>“4D tracking.”</strong></span></p>
+        <div class="analogy"><strong><span lang="ja">たとえるなら</span><span lang="en">Analogy</span></strong> —
+          <span lang="ja">雨粒が落ちた場所を、まわりに並べたバケツに飛び散った水の量の比から推理するようなもの。</span>
+          <span lang="en">like working out exactly where a raindrop landed from how much splash ended up in each of the buckets around it.</span></div>
+      </div>
+      <figure class="fig reveal">
+        <div id="lgad-fig"></div>
+        <figcaption><span lang="ja">AC-LGAD の断面図（模式図）。荷電粒子（白線）が作った電子が増幅層でなだれ増幅され、近くの電極ほど大きな信号が誘起されます。</span>
+          <span lang="en">Cross-section of an AC-LGAD (schematic). Electrons freed by the particle (white line) avalanche in the gain layer; nearer electrodes see bigger signals.</span></figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- 4. TOF -->
+  <section id="tof">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="step-num">04 / <span lang="ja">体験してみよう</span><span lang="en">Try it</span></span>
+        <h2><span lang="ja">TOF シミュレーター：その時間分解能で見分けられる？</span><span lang="en">TOF simulator: can you tell them apart?</span></h2>
+        <p class="lead"><span lang="ja">運動量・飛行距離・時間分解能を動かして、2種類の粒子の到着時間がどれだけ離れるか見てみましょう。2つの山が重なってしまうと、どちらの粒子か判別できません。</span>
+          <span lang="en">Move the sliders and watch how far apart the arrival times of two particle species are. If the two peaks overlap, you can't tell which particle you saw.</span></p>
+      </div>
+      <div class="card tof-widget reveal">
+        <div class="tof-controls">
+          <div>
+            <label for="tof-pair"><span lang="ja">比べる粒子</span><span lang="en">Particle pair</span></label>
+            <select id="tof-pair">
+              <option value="pi-k">π / K</option>
+              <option value="k-p">K / p</option>
+              <option value="e-pi">e / π</option>
+            </select>
+          </div>
+          <div>
+            <label for="tof-p"><span lang="ja">運動量</span><span lang="en">Momentum</span> p = <output id="o-p"></output> GeV/c</label>
+            <input type="range" id="tof-p" min="0.2" max="6" step="0.05" value="1.5">
+          </div>
+          <div>
+            <label for="tof-l"><span lang="ja">飛行距離</span><span lang="en">Flight path</span> L = <output id="o-l"></output> m</label>
+            <input type="range" id="tof-l" min="0.3" max="2" step="0.01" value="0.65">
+          </div>
+          <div>
+            <label for="tof-s"><span lang="ja">時間分解能</span><span lang="en">Time resolution</span> σ = <output id="o-s"></output> ps</label>
+            <input type="range" id="tof-s" min="10" max="200" step="1" value="30">
+          </div>
+        </div>
+        <div class="tof-canvas-wrap"><canvas id="tof-canvas" aria-label="Arrival time distributions"></canvas></div>
+        <div class="tof-result">
+          <div class="stat"><div class="num" id="r-t1">–</div><div class="lbl" id="r-l1"></div></div>
+          <div class="stat"><div class="num" id="r-t2">–</div><div class="lbl" id="r-l2"></div></div>
+          <div class="stat"><div class="num" id="r-dt">–</div><div class="lbl"><span lang="ja">到着時間の差 Δt</span><span lang="en">Time difference Δt</span></div></div>
+          <div class="stat"><div class="num" id="r-n">–</div><div class="lbl"><span lang="ja">分離能力 Δt / σ</span><span lang="en">Separation Δt / σ</span></div></div>
+        </div>
+        <p class="verdict" id="r-verdict"></p>
+        <p class="muted small" style="margin:0"><span lang="ja">計算式：t = (L/c)·√(1 + m²/p²)。「3σ 以上離れていれば、ほぼ確実に見分けられる」を目安にしています。実際の測定では、衝突時刻や飛行経路の誤差も効いてきます。</span>
+          <span lang="en">Formula: t = (L/c)·√(1 + m²/p²). Rule of thumb: ≥ 3σ apart means the two species are cleanly separated. Real measurements also include uncertainty on the collision time and the track length.</span></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. WORK -->
+  <section id="work">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="step-num">05 / <span lang="ja">私がやっていること</span><span lang="en">What I do</span></span>
+        <h2><span lang="ja">センサーを「測る」ための道具づくりから、ビームでの実証まで</span><span lang="en">From building the test benches to proving it in a beam</span></h2>
+      </div>
+      <div class="work-list reveal">
+        <div class="work-item"><div class="icon">🔦</div><h3><span lang="ja">レーザー試験系 (TCT) の構築</span><span lang="en">Building a laser test bench (TCT)</span></h3><p><span lang="ja">1064 nm パルス赤外レーザーと電動ステージで、センサー上の狙った場所に「疑似粒子」を打ち込み、応答をマッピングする装置を設計・立ち上げ。</span><span lang="en">Designed and commissioned a setup that fires a 1064 nm pulsed IR laser at chosen spots on a sensor via motorised stages, mapping its response.</span></p></div>
+        <div class="work-item"><div class="icon">⚡</div><h3><span lang="ja">電子ビームテスト</span><span lang="en">Electron beam tests</span></h3><p><span lang="ja">KEK の電子ビームで、ePIC の TOF 用ストリップ型・ZDC 用ピクセル型 AC-LGAD を評価。時間応答の温度依存性も測定。</span><span lang="en">Tested strip AC-LGADs (for ePIC TOF) and pixel AC-LGADs (for the ZDC) with electron beams at KEK, including how timing changes with temperature.</span></p></div>
+        <div class="work-item"><div class="icon">🧩</div><h3><span lang="ja">読み出しエレクトロニクス</span><span lang="en">Readout electronics</span></h3><p><span lang="ja">米国 BNL に 3か月滞在し、AC-LGAD 用フロントエンド ASIC を開発。ストリップ型用の読み出し基板も開発。</span><span lang="en">Spent three months at BNL developing a front-end ASIC for AC-LGADs; also developed readout boards for the strip sensors.</span></p></div>
+        <div class="work-item"><div class="icon">📈</div><h3><span lang="ja">波形解析と時間分解能</span><span lang="en">Waveform analysis</span></h3><p><span lang="ja">Python の解析パイプラインで、時間分解能を「センサー由来・回路由来・…」の要因に分解し、位置再構成も行う。</span><span lang="en">Python pipelines that break the time resolution down into its contributions (sensor, electronics, …) and reconstruct hit positions.</span></p></div>
+        <div class="work-item"><div class="icon">🔍</div><h3><span lang="ja">センサー品質保証 (QA)</span><span lang="en">Sensor quality assurance</span></h3><p><span lang="ja">顕微鏡画像からウェハの欠け（エッジチッピング）を自動検出するなど、日本での AC-LGAD QA 体制をつくる。</span><span lang="en">Setting up AC-LGAD QA in Japan — e.g. automatically spotting edge chipping on wafers from microscope images.</span></p></div>
+        <div class="work-item"><div class="icon">🖥️</div><h3><span lang="ja">シミュレーション</span><span lang="en">Simulation</span></h3><p><span lang="ja">ePIC Barrel TOF の検出器シミュレーションで、時間分解能から粒子識別性能を見積もる。</span><span lang="en">Detector simulations of the ePIC Barrel TOF that translate timing performance into particle-ID reach.</span></p></div>
+      </div>
+      <p style="margin-top:1.5rem" class="reveal"><a class="btn" href="../cv/index.html"><span lang="ja">発表・業績は CV へ</span><span lang="en">Talks &amp; publications in the CV</span> →</a></p>
+    </div>
+  </section>
+
+  <!-- GLOSSARY -->
+  <section style="padding-top:0">
+    <div class="narrow">
+      <div class="section-head reveal">
+        <p class="eyebrow">Glossary</p>
+        <h2><span lang="ja">ミニ用語集</span><span lang="en">Mini glossary</span></h2>
+      </div>
+      <div class="reveal">
+        <details class="glossary"><summary><span lang="ja">ピコ秒 (ps)</span><span lang="en">Picosecond (ps)</span></summary><p><span lang="ja">1兆分の1秒（10⁻¹² 秒）。1秒と1ピコ秒の比は、約3万年と1秒の比とほぼ同じ。</span><span lang="en">One trillionth of a second (10⁻¹² s). A picosecond is to a second roughly what a second is to 30,000 years.</span></p></details>
+        <details class="glossary"><summary>eV, MeV, GeV</summary><p><span lang="ja">素粒子物理で使うエネルギー（と質量）の単位。1 GeV = 10億 eV。陽子の質量は約 0.938 GeV/c²。</span><span lang="en">Units of energy (and, via E = mc², mass) in particle physics. 1 GeV = 10⁹ eV. The proton mass is about 0.938 GeV/c².</span></p></details>
+        <details class="glossary"><summary><span lang="ja">クォーク・グルーオン</span><span lang="en">Quarks &amp; gluons</span></summary><p><span lang="ja">陽子や中性子をつくる素粒子（クォーク）と、その間に働く「強い力」を伝える粒子（グルーオン）。単独では取り出せず、必ず陽子などの中に閉じ込められている。</span><span lang="en">Quarks are the building blocks of protons and neutrons; gluons carry the strong force between them. Neither can be isolated — they are always confined inside particles such as protons.</span></p></details>
+        <details class="glossary"><summary><span lang="ja">粒子識別 (PID)</span><span lang="en">Particle identification (PID)</span></summary><p><span lang="ja">検出器を通った粒子が π・K・p などのどれなのかを判定すること。TOF のほか、チェレンコフ光などを使う方法もある。</span><span lang="en">Working out whether a detected particle is a pion, kaon, proton, etc. Besides TOF, Cherenkov light and other techniques are used.</span></p></details>
+        <details class="glossary"><summary><span lang="ja">ビームテスト</span><span lang="en">Beam test</span></summary><p><span lang="ja">加速器からの粒子ビームを試作検出器に当てて、本番に近い条件で性能を測る実験。数日〜数週間、昼夜交代で行うことが多い。</span><span lang="en">Shooting a particle beam from an accelerator at a prototype detector to measure its performance in realistic conditions — often days to weeks of round-the-clock shifts.</span></p></details>
+        <details class="glossary"><summary>TCT (Transient Current Technique)</summary><p><span lang="ja">短いレーザーパルスでセンサー内に電荷をつくり、流れる電流の波形を測る手法。粒子ビームなしで、狙った位置の応答を何度でも調べられる。</span><span lang="en">A method that injects charge into a sensor with short laser pulses and records the current waveform — letting you probe any spot repeatedly without a particle beam.</span></p></details>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. LINKS -->
+  <section id="links" style="padding-top:0">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="step-num">06 / <span lang="ja">もっと知りたい人へ</span><span lang="en">Go further</span></span>
+        <h2><span lang="ja">公開ページ・資料</span><span lang="en">Public pages &amp; resources</span></h2>
+      </div>
+      <div class="link-list reveal">
+        <a class="link-card" href="https://www.bnl.gov/eic/" target="_blank" rel="noopener"><span class="ttl">Electron-Ion Collider (BNL)</span><span class="muted small"><span lang="ja">EIC 公式ページ</span><span lang="en">Official EIC site</span></span><span class="url">bnl.gov/eic</span></a>
+        <a class="link-card" href="https://www.bnl.gov/eic/epic.php" target="_blank" rel="noopener"><span class="ttl">ePIC Collaboration</span><span class="muted small"><span lang="ja">EIC 最初の検出器をつくる国際共同実験</span><span lang="en">The collaboration building the first EIC detector</span></span><span class="url">bnl.gov/eic/epic.php</span></a>
+        <a class="link-card" href="https://www.eicug.org/" target="_blank" rel="noopener"><span class="ttl">EIC Users Group</span><span class="muted small"><span lang="ja">EIC の研究者コミュニティ</span><span lang="en">The EIC research community</span></span><span class="url">eicug.org</span></a>
+        <a class="link-card" href="https://arxiv.org/abs/2103.05419" target="_blank" rel="noopener"><span class="ttl">EIC Yellow Report</span><span class="muted small"><span lang="ja">EIC の物理と検出器要求をまとめた報告書</span><span lang="en">Science requirements &amp; detector concepts</span></span><span class="url">arXiv:2103.05419</span></a>
+        <a class="link-card" href="https://arxiv.org/abs/1212.1701" target="_blank" rel="noopener"><span class="ttl">EIC White Paper</span><span class="muted small">“Electron Ion Collider: The Next QCD Frontier”</span><span class="url">arXiv:1212.1701</span></a>
+        <a class="link-card" href="https://www.quark.hiroshima-u.ac.jp/" target="_blank" rel="noopener"><span class="ttl"><span lang="ja">広島大学 クォーク物理学研究室</span><span lang="en">Quark Physics Lab, Hiroshima Univ.</span></span><span class="muted small"><span lang="ja">所属研究室</span><span lang="en">My lab</span></span><span class="url">quark.hiroshima-u.ac.jp</span></a>
+      </div>
+    </div>
+  </section>
+</main>
+<script src="../assets/js/research.js"></script>
+</body>
+</html>
