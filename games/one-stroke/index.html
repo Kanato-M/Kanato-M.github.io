@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="ja" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>One Stroke 一筆書き</title>
+<style>
+  :root {
+    --bg:#0a0f1f; --fg:#e9eefb; --muted:#98a3c0;
+    --c1:#4de1ff; --c2:#ff5ca8; --gold:#ffd166; --ok:#5ef0a0; --vio:#8b7bff;
+    --hdr:rgba(255,255,255,.025); --line:rgba(255,255,255,.1); --chip:rgba(255,255,255,.05);
+    --btn:rgba(255,255,255,.06); --btnh:rgba(255,255,255,.11);
+    --open:#151e3d; --openStroke:rgba(255,255,255,.06); --wall:#060914; --wallStroke:rgba(255,255,255,.04); --visited:#1b2a52;
+    --edge:#3a4670; --node:#c7d0ea; --nodeStroke:#0a0f1f;
+    --overlay:rgba(10,15,31,.84); --card:#121a33; --shadow:0 10px 40px rgba(0,0,0,.45);
+  }
+  :root[data-theme="light"] {
+    --bg:#f6f7fb; --fg:#121a30; --muted:#5a6683;
+    --c1:#0b8fb9; --c2:#d42f7c; --gold:#b7791f; --ok:#16935a; --vio:#6a5ae0;
+    --hdr:rgba(18,26,48,.02); --line:rgba(18,26,48,.12); --chip:rgba(18,26,48,.04);
+    --btn:#ffffff; --btnh:#eef1f8;
+    --open:#ffffff; --openStroke:rgba(18,26,48,.1); --wall:#c9cfdf; --wallStroke:rgba(18,26,48,.06); --visited:#e3f1fa;
+    --edge:#b9c1d6; --node:#3c4766; --nodeStroke:#f6f7fb;
+    --overlay:rgba(246,247,251,.86); --card:#ffffff; --shadow:0 10px 40px rgba(18,26,48,.16);
+  }
+  * { box-sizing:border-box; }
+  html, body { margin:0; height:100%; }
+  body { background:var(--bg); color:var(--fg); font-family:Inter, "Noto Sans JP", "Hiragino Sans", system-ui, sans-serif;
+    overflow:hidden; user-select:none; -webkit-user-select:none; -webkit-tap-highlight-color:transparent; }
+  [data-l="en"] .ja, [data-l="ja"] .en { display:none !important; }
+  button { font:inherit; color:inherit; cursor:pointer; }
+  button:disabled { opacity:.35; cursor:default; }
+  #app { height:100%; display:flex; flex-direction:column; }
+
+  header { display:flex; align-items:center; gap:.45rem; padding:.55rem .8rem; border-bottom:1px solid var(--line); background:var(--hdr);
+    position:relative; z-index:25; }
+  header h1 { margin:0; font-size:1.02rem; font-weight:800; flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .pill { font-family:ui-monospace, monospace; font-size:.76rem; padding:.3rem .62rem; border-radius:999px; border:1px solid var(--line);
+    color:var(--muted); background:var(--chip); white-space:nowrap; }
+  .pill b { color:var(--fg); }
+  .hbtn { border:1px solid var(--line); background:var(--btn); border-radius:999px; padding:.32rem .7rem; font-size:.8rem; font-weight:700; }
+  .hbtn:hover { background:var(--btnh); }
+  .hbtn.round { width:2rem; height:2rem; padding:0; }
+
+  .bar { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 12px 0; flex-wrap:wrap; }
+  .tabs { display:flex; background:var(--chip); border:1px solid var(--line); border-radius:999px; padding:3px; }
+  .tab { border:0; background:transparent; border-radius:999px; padding:.42rem .95rem; font-weight:700; font-size:.88rem; color:var(--muted); }
+  .tab.on { background:linear-gradient(90deg, #4de1ff, #ff5ca8); color:#07101f; }
+  .lvl { display:flex; align-items:center; gap:4px; }
+  .lvl button { border:1px solid var(--line); background:var(--btn); border-radius:999px; height:2.1rem; min-width:2.1rem; font-weight:800; }
+  .lvl button:hover:not(:disabled) { background:var(--btnh); }
+  #lvBtn { padding:0 .9rem; font-family:ui-monospace, monospace; }
+
+  #stage { position:relative; flex:1; min-height:0; margin:10px 12px 0; }
+  #svg { position:absolute; inset:0; width:100%; height:100%; touch-action:none; display:block; cursor:pointer; }
+  #toast { position:absolute; left:50%; top:6px; transform:translateX(-50%); background:var(--card); border:1px solid var(--line); border-radius:999px;
+    padding:.35rem .9rem; font-size:.85rem; font-weight:700; box-shadow:var(--shadow); opacity:0; transition:opacity .2s; pointer-events:none; white-space:nowrap; }
+  #toast.show { opacity:1; }
+
+  .bottom { display:flex; align-items:center; gap:10px; padding:10px 12px 12px; flex-wrap:wrap; justify-content:space-between; }
+  #status { font-size:.86rem; color:var(--muted); }
+  #status b { color:var(--fg); font-family:ui-monospace, monospace; font-size:1rem; }
+  .acts { display:flex; gap:8px; }
+  .act { border:1px solid var(--line); background:var(--btn); border-radius:12px; padding:.5rem .8rem; font-weight:700; font-size:.86rem; display:flex; align-items:center; gap:.35rem; }
+  .act:hover:not(:disabled) { background:var(--btnh); }
+  .act .ic { font-size:1.05rem; }
+
+  /* SVG styling */
+  .cellr { fill:var(--open); stroke:var(--openStroke); stroke-width:.02; }
+  .cellr.wall { fill:var(--wall); stroke:var(--wallStroke); }
+  .cellr.vis { fill:var(--visited); }
+  .wallx { stroke:var(--line); stroke-width:.05; stroke-linecap:round; }
+  .startmark { fill:none; stroke:var(--c1); stroke-width:.07; }
+  .head { fill:#fff; stroke:var(--c2); stroke-width:.08; filter:drop-shadow(0 0 .08px var(--c2)); }
+  :root[data-theme="light"] .head { fill:#fff; }
+  .hintmark { fill:none; stroke:var(--gold); stroke-width:.08; animation:pulse 1s ease-in-out infinite; transform-box:fill-box; transform-origin:center; }
+  .hintedge { stroke:var(--gold); stroke-width:.1; stroke-dasharray:.12 .12; stroke-linecap:round; animation:dash .6s linear infinite; }
+  @keyframes pulse { 0%,100% { transform:scale(.85); opacity:.6; } 50% { transform:scale(1.1); opacity:1; } }
+  @keyframes dash { to { stroke-dashoffset:-.24; } }
+  .edge { stroke:var(--edge); stroke-width:.11; stroke-linecap:round; }
+  .node { fill:var(--node); stroke:var(--nodeStroke); stroke-width:.04; }
+  .node.odd { }
+  .node.done { fill:var(--muted); }
+  svg.won .seg { animation:glow 1.1s ease-in-out 2; }
+  @keyframes glow { 50% { stroke-width:.5; opacity:.75; } }
+  svg.won.lines .seg { animation-name:glow2; }
+  @keyframes glow2 { 50% { stroke-width:.24; opacity:.75; } }
+
+  .overlay { position:fixed; inset:0; z-index:20; display:flex; align-items:center; justify-content:center; padding:62px 16px 16px; background:var(--overlay);
+    backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); }
+  .overlay.hidden { display:none; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow); padding:20px; width:min(460px,100%);
+    max-height:100%; overflow:auto; text-align:center; }
+  .card h2 { margin:.1rem 0 .7rem; font-size:1.3rem; }
+  .card p { color:var(--muted); line-height:1.65; margin:.4rem 0; font-size:.92rem; }
+  .help { text-align:left; }
+  .help h3 { font-size:.98rem; margin:.9rem 0 .2rem; }
+  .help ul { margin:.2rem 0 .4rem; padding-left:1.2rem; line-height:1.65; font-size:.9rem; }
+  .primary { border:0; border-radius:999px; padding:.7rem 1.3rem; font-weight:800; color:#07101f;
+    background:linear-gradient(90deg, #4de1ff, #ff5ca8); box-shadow:0 6px 20px rgba(255,92,168,.22); }
+  .primary:hover { filter:brightness(1.07); }
+  .ghost { border:1px solid var(--line); background:var(--btn); border-radius:999px; padding:.62rem 1rem; font-weight:700; }
+  .row { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:14px; }
+  .big { font-size:2.2rem; font-weight:900; background:linear-gradient(90deg, var(--c1), var(--c2)); -webkit-background-clip:text; background-clip:text; color:transparent; margin:.1rem 0; }
+  .lvgrid { display:grid; grid-template-columns:repeat(6,1fr); gap:8px; margin:12px 0 4px; }
+  .lvgrid button { aspect-ratio:1; border-radius:12px; border:1px solid var(--line); background:var(--btn); font-weight:800; font-family:ui-monospace, monospace; position:relative; }
+  .lvgrid button.clr { border-color:color-mix(in srgb, var(--ok) 55%, transparent); }
+  .lvgrid button.clr::after { content:"✓"; position:absolute; right:4px; top:1px; font-size:.65rem; color:var(--ok); }
+  .lvgrid button.cur { background:linear-gradient(90deg, #4de1ff, #ff5ca8); color:#07101f; border:0; }
+  #fx { position:fixed; inset:0; pointer-events:none; z-index:30; width:100%; height:100%; }
+  @media (max-width:430px) {
+    header h1 { font-size:.95rem; } .pill { font-size:.7rem; padding:.25rem .5rem; } .hbtn { padding:.28rem .55rem; }
+    .tab { padding:.4rem .7rem; font-size:.84rem; }
+    .bottom { justify-content:center; } #status { width:100%; text-align:center; }
+    .act { padding:.5rem .7rem; }
+  }
+</style>
+</head>
+<body data-l="ja">
+<div id="app">
+  <header>
+    <h1>✏️ <span class="ja">一筆書き</span><span class="en">One Stroke</span></h1>
+    <span class="pill" id="pill"></span>
+    <button class="hbtn" id="langBtn" type="button">JA / EN</button>
+    <button class="hbtn round" id="helpBtn" type="button" aria-label="Help">?</button>
+  </header>
+  <div class="bar">
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" data-mode="cells" type="button">▦ <span class="ja">マス</span><span class="en">Cells</span></button>
+      <button class="tab" role="tab" data-mode="lines" type="button">✦ <span class="ja">線</span><span class="en">Lines</span></button>
+    </div>
+    <div class="lvl">
+      <button id="prevLv" type="button" aria-label="Previous level">‹</button>
+      <button id="lvBtn" type="button">Lv 1</button>
+      <button id="nextLv" type="button" aria-label="Next level">›</button>
+    </div>
+  </div>
+  <div id="stage">
+    <svg id="svg" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"></svg>
+    <div id="toast"></div>
+  </div>
+  <div class="bottom">
+    <span id="status"></span>
+    <div class="acts">
+      <button class="act" id="undoBtn" type="button"><span class="ic">↶</span><span class="ja">戻す</span><span class="en">Undo</span></button>
+      <button class="act" id="restartBtn" type="button"><span class="ic">⟲</span><span class="ja">最初から</span><span class="en">Restart</span></button>
+      <button class="act" id="hintBtn" type="button"><span class="ic">💡</span><span class="ja">ヒント</span><span class="en">Hint</span></button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="helpDlg">
+  <div class="card help">
+    <h2>✏️ <span class="ja">遊び方</span><span class="en">How to play</span></h2>
+    <div class="ja">
+      <h3>▦ マス モード</h3>
+      <ul>
+        <li>光る丸（スタート）から指やマウスでなぞり、<b>すべての空きマスを1回ずつ</b>通る一本道を描こう。移動は上下左右のみ。</li>
+        <li>なぞった道を逆にたどると戻せます。道の途中のマスをタップすると、そこまで巻き戻し。隣のマスをタップして1歩ずつ進むこともできます。</li>
+      </ul>
+      <h3>✦ 線 モード</h3>
+      <ul>
+        <li>図形の<b>すべての線を1回ずつ</b>なぞろう（ペンを離さず、同じ線は2度通れない）。点から点へドラッグ、またはタップで進みます。</li>
+        <li>好きな点から始められます。ただし<b>線が奇数本つながった点が2つ</b>ある図形は、そのどちらかから始めないと描けません（オイラー路）。</li>
+      </ul>
+      <h3>共通</h3>
+      <ul><li>💡ヒントは次の一手を光らせます（行き止まりなら描ける所まで自動で戻します）。進捗は自動保存。レベルが上がるほど大きく複雑に。</li></ul>
+    </div>
+    <div class="en">
+      <h3>▦ Cells mode</h3>
+      <ul>
+        <li>Starting from the glowing ring, drag to draw one path that visits <b>every open cell exactly once</b>, moving up/down/left/right.</li>
+        <li>Drag back along your path to undo. Tap any cell of your path to rewind to it, or tap a neighbouring cell to step forward.</li>
+      </ul>
+      <h3>✦ Lines mode</h3>
+      <ul>
+        <li>Trace <b>every line of the figure exactly once</b> without lifting the pen. Drag (or tap) from dot to dot along the lines.</li>
+        <li>You may start anywhere — but if exactly <b>two dots have an odd number of lines</b>, you must start at one of them (an Euler trail).</li>
+      </ul>
+      <h3>Both modes</h3>
+      <ul><li>💡 Hint highlights the next move (and rewinds you if you are stuck in a dead end). Progress is saved automatically; levels grow larger and trickier.</li></ul>
+    </div>
+    <div style="text-align:center"><button class="primary" id="closeHelp" type="button">OK</button></div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="winDlg">
+  <div class="card">
+    <h2>🎉 <span class="ja">クリア！</span><span class="en">Cleared!</span></h2>
+    <div class="big" id="winLv">Lv 1</div>
+    <p id="winMsg"></p>
+    <div class="row">
+      <button class="ghost" id="winAgain" type="button"><span class="ja">もう一度</span><span class="en">Replay</span></button>
+      <button class="primary" id="winNext" type="button"><span class="ja">次のレベル →</span><span class="en">Next level →</span></button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="lvDlg">
+  <div class="card">
+    <h2><span class="ja">レベル選択</span><span class="en">Select level</span></h2>
+    <p id="lvInfo"></p>
+    <div class="lvgrid" id="lvGrid"></div>
+    <div class="row"><button class="ghost" id="lvClose" type="button"><span class="ja">閉じる</span><span class="en">Close</span></button></div>
+  </div>
+</div>
+<canvas id="fx"></canvas>
+
+<script>
+(function () {
+  "use strict";
+  var KEY = "onestroke.", NS = "http://www.w3.org/2000/svg";
+  function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  function lsJSON(k) { var s = lsGet(k); if (!s) return null; try { return JSON.parse(s); } catch (e) { return null; } }
+  var $ = function (id) { return document.getElementById(id); };
+
+  var lang = lsGet("lang");
+  if (lang !== "ja" && lang !== "en") lang = (navigator.language || "").toLowerCase().indexOf("ja") === 0 ? "ja" : "en";
+  function T(ja, en) { return lang === "ja" ? ja : en; }
+  var theme = lsGet("theme") === "light" ? "light" : "dark";
+  function applyTheme() { document.documentElement.setAttribute("data-theme", theme); }
+  function applyLang() { document.body.setAttribute("data-l", lang); document.documentElement.lang = lang; }
+  applyTheme(); applyLang();
+  window.addEventListener("storage", function (e) {
+    if (e.key === "lang" && (e.newValue === "ja" || e.newValue === "en")) { lang = e.newValue; applyLang(); refresh(); }
+    if (e.key === "theme") { theme = e.newValue === "light" ? "light" : "dark"; applyTheme(); refresh(); }
+  });
+
+  /* ================= utilities ================= */
+  function mulberry32(a) {
+    return function () { a |= 0; a = (a + 0x6D2B79F5) | 0; var t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  }
+  function shuffleR(a, rnd) { for (var i = a.length - 1; i > 0; i--) { var j = (rnd() * (i + 1)) | 0, t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+  function lerpColor(a, b, t) {
+    var pa = [1, 3, 5].map(function (k) { return parseInt(a.substr(k, 2), 16); }), pb = [1, 3, 5].map(function (k) { return parseInt(b.substr(k, 2), 16); });
+    return "rgb(" + pa.map(function (v, k) { return Math.round(v + (pb[k] - v) * t); }).join(",") + ")";
+  }
+  function gradAt(t) { // cyan -> violet -> pink along the stroke
+    var c = theme === "light" ? ["#0b8fb9", "#6a5ae0", "#d42f7c"] : ["#4de1ff", "#8b7bff", "#ff5ca8"];
+    return t < .5 ? lerpColor(c[0], c[1], t * 2) : lerpColor(c[1], c[2], (t - .5) * 2);
+  }
+  function el(tag, attrs, parent) {
+    var e = document.createElementNS(NS, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+
+  /* ================= Cells mode: generation ================= */
+  function cellsConfig(L) {
+    var sizes = [[4, 4], [4, 4], [4, 5], [5, 5], [5, 5], [5, 6], [6, 6], [6, 6], [6, 7], [7, 7], [7, 7], [7, 8], [8, 8], [8, 8], [8, 9], [9, 9]];
+    var s = L <= sizes.length ? sizes[L - 1] : (L < 24 ? [9, 9] : L < 32 ? [9, 10] : [10, 10]);
+    var n = s[0] * s[1], f = 0.08 + 0.07 * Math.min(1, (L - 1) / 16);
+    return { w: s[0], h: s[1], wmin: Math.max(1, Math.round(n * (f - 0.03))), wmax: Math.max(2, Math.round(n * (f + 0.03))), target: Math.max(1, Math.round(n * f)) };
+  }
+  function nbrs4(i, w, h) {
+    var x = i % w, y = (i / w) | 0, r = [];
+    if (x > 0) r.push(i - 1); if (x < w - 1) r.push(i + 1); if (y > 0) r.push(i - w); if (y < h - 1) r.push(i + w);
+    return r;
+  }
+  /* Main generator: scatter small wall pieces (<= 3 cells each), check parity / dead-end conditions, then search a
+     Hamiltonian path over the open cells with a randomized, step-bounded DFS (deterministic for a given level seed).
+     The path found is stored as the level's solution; its first cell is the start. */
+  function genCells(L) {
+    var cf = cellsConfig(L), w = cf.w, h = cf.h, n = w * h, rnd = mulberry32(L * 7919 + 104729);
+    for (var att = 0; att < 150; att++) {
+      var wall = placeWalls(cf, rnd), i, open = 0, par = 0, deg1 = [], bad = false;
+      for (i = 0; i < n; i++) if (!wall[i]) {
+        open++; par += ((i % w) + ((i / w) | 0)) & 1 ? 1 : -1;
+        var d = nbrs4(i, w, h).filter(function (j) { return !wall[j]; }).length;
+        if (d === 0) bad = true; else if (d === 1) deg1.push(i);
+      }
+      if (bad || Math.abs(par) > 1 || deg1.length > 2) continue;
+      var lv = { w: w, h: h, wall: wall, open: open };
+      var starts = [];
+      for (i = 0; i < n; i++) if (!wall[i] && (par === 0 || ((((i % w) + ((i / w) | 0)) & 1 ? 1 : -1) === par))) starts.push(i);
+      if (deg1.length === 2) starts = starts.filter(function (i) { return deg1.indexOf(i) >= 0; });
+      shuffleR(starts, rnd);
+      for (var k = 0; k < Math.min(3, starts.length); k++) {
+        var sol = solveCells(lv, [starts[k]], 0, rnd, 3000);
+        if (sol) { lv.start = sol[0]; lv.solution = sol; return lv; }
+      }
+    }
+    return genCellsWalk(L);
+  }
+  function placeWalls(cf, rnd) {
+    var w = cf.w, h = cf.h, n = w * h, count = cf.wmin + ((rnd() * (cf.wmax - cf.wmin + 1)) | 0), wall = new Uint8Array(n), list = [];
+    for (var tries = 0; list.length < count && tries < 2000; tries++) {
+      var i;
+      if (list.length && rnd() < 0.3) { var nb = nbrs4(list[(rnd() * list.length) | 0], w, h); i = nb[(rnd() * nb.length) | 0]; }
+      else i = (rnd() * n) | 0;
+      if (wall[i]) continue;
+      wall[i] = 1;
+      if (componentSize(wall, i, w, h) > 3) { wall[i] = 0; continue; }
+      list.push(i);
+    }
+    return wall;
+  }
+  function componentSize(wall, i, w, h) {
+    var seen = {}, st = [i], c = 0; seen[i] = 1;
+    while (st.length) { var x = st.pop(); c++; nbrs4(x, w, h).forEach(function (j) { if (wall[j] && !seen[j]) { seen[j] = 1; st.push(j); } }); }
+    return c;
+  }
+  /* Fallback generator: random self-avoiding walk steered by Warnsdorff's rule (go to the neighbour with the fewest
+     onward moves) with random "noise" moves. The walk is a Hamiltonian path of the cells it visits; unvisited cells become walls. */
+  function genCellsWalk(L) {
+    var cf = cellsConfig(L), w = cf.w, h = cf.h, n = w * h, rnd = mulberry32(L * 7919 + 104729), best = null, bestScore = Infinity;
+    for (var att = 0; att < 1500; att++) {
+      var noise = 0.05 + rnd() * 0.4, start = (rnd() * n) | 0, vis = new Uint8Array(n), path = [start], cur = start;
+      vis[start] = 1;
+      for (;;) {
+        var nb = nbrs4(cur, w, h).filter(function (j) { return !vis[j]; });
+        if (!nb.length) break;
+        var next;
+        if (rnd() < noise) next = nb[(rnd() * nb.length) | 0];
+        else {
+          shuffleR(nb, rnd);
+          var bd = 9;
+          nb.forEach(function (j) { var d = nbrs4(j, w, h).filter(function (k) { return !vis[k]; }).length; if (d < bd) { bd = d; next = j; } });
+        }
+        vis[next] = 1; path.push(next); cur = next;
+      }
+      var walls = n - path.length;
+      if (walls < cf.wmin || walls > cf.wmax) { var sc0 = 1000 + Math.abs(walls - cf.target); if (sc0 < bestScore) { bestScore = sc0; best = path; } continue; }
+      // quality: walls should be scattered, not one big block
+      var comp = largestWallComponent(vis, w, h);
+      var sc = Math.abs(walls - cf.target) + Math.max(0, comp - Math.max(2, Math.ceil(walls / 2))) * 10;
+      if (sc < bestScore) { bestScore = sc; best = path; }
+      if (sc <= 1) break;
+    }
+    var isWall = new Uint8Array(n); for (var i = 0; i < n; i++) isWall[i] = 1;
+    best.forEach(function (j) { isWall[j] = 0; });
+    return { w: w, h: h, wall: isWall, start: best[0], solution: best, open: best.length };
+  }
+  function largestWallComponent(vis, w, h) {
+    var seen = new Uint8Array(w * h), mx = 0;
+    for (var i = 0; i < w * h; i++) if (!vis[i] && !seen[i]) {
+      var st = [i], c = 0; seen[i] = 1;
+      while (st.length) { var x = st.pop(); c++; nbrs4(x, w, h).forEach(function (j) { if (!vis[j] && !seen[j]) { seen[j] = 1; st.push(j); } }); }
+      if (c > mx) mx = c;
+    }
+    return mx;
+  }
+  /* DFS completing a Hamiltonian path from the given prefix, with dead-end and connectivity pruning.
+     Bounded by time (`ms`, used by the hint) or deterministically by recursion steps (`maxSteps`, used by the generator). */
+  function solveCells(lv, prefix, ms, rnd, maxSteps) {
+    var w = lv.w, h = lv.h, n = w * h, vis = new Uint8Array(n), path = prefix.slice(), left = lv.open - prefix.length, t0 = Date.now(), steps = 0, timedOut = false;
+    prefix.forEach(function (j) { vis[j] = 1; });
+    for (var i = 0; i < n; i++) if (lv.wall[i]) vis[i] = 1; // walls count as visited ("not free")
+    var NB = []; for (i = 0; i < n; i++) NB.push(nbrs4(i, w, h));
+    var adjMark = new Uint8Array(n), seen = new Uint8Array(n), stack = new Int32Array(n);
+    function freeDeg(u) { var A = NB[u], d = 0; for (var k = 0; k < A.length; k++) if (!vis[A[k]]) d++; return d; }
+    function ok(end) {
+      // dead-end and connectivity pruning: an unvisited cell not next to the path's end needs >= 2 free neighbours,
+      // except for at most one (the final cell); and all unvisited cells must be reachable from the end.
+      var A = NB[end], k, u, ends = 0, total = 0, okk = true;
+      for (k = 0; k < A.length; k++) adjMark[A[k]] = 1;
+      for (u = 0; u < n; u++) if (!vis[u]) {
+        total++;
+        if (!adjMark[u]) { var d = freeDeg(u); if (d === 0 || (d === 1 && ++ends > 1)) { okk = false; break; } }
+      }
+      for (k = 0; k < A.length; k++) adjMark[A[k]] = 0;
+      if (!okk) return false;
+      if (!total) return true;
+      seen.fill(0);
+      var sp = 0, c = 0;
+      for (k = 0; k < A.length; k++) if (!vis[A[k]] && !seen[A[k]]) { seen[A[k]] = 1; stack[sp++] = A[k]; }
+      while (sp) { var x = stack[--sp], B = NB[x]; c++; for (k = 0; k < B.length; k++) { var y = B[k]; if (!vis[y] && !seen[y]) { seen[y] = 1; stack[sp++] = y; } } }
+      return c === total;
+    }
+    function rec(end) {
+      if (left === 0) return true;
+      steps++;
+      if (maxSteps ? steps > maxSteps : ((steps & 255) === 0 && Date.now() - t0 > ms)) { timedOut = true; return false; }
+      if (!ok(end)) return false;
+      var opts = [], A = NB[end];
+      for (var k = 0; k < A.length; k++) if (!vis[A[k]]) opts.push([freeDeg(A[k]), A[k]]);
+      if (rnd) shuffleR(opts, rnd);
+      opts.sort(function (a, b) { return a[0] - b[0]; });
+      for (var q = 0; q < opts.length; q++) {
+        var j = opts[q][1];
+        vis[j] = 1; path.push(j); left--;
+        if (rec(j)) return true;
+        vis[j] = 0; path.pop(); left++;
+        if (timedOut) return false;
+      }
+      return false;
+    }
+    var r = rec(path[path.length - 1]);
+    return r ? path : (timedOut ? undefined : null); // undefined = unknown (time-out), null = proven impossible
+  }
+
+  /* ================= Lines mode: generation ================= */
+  function linesConfig(L) {
+    var lat = L <= 2 ? [3, 3] : L <= 5 ? [4, 3] : L <= 9 ? [4, 4] : L <= 14 ? [5, 4] : L <= 20 ? [5, 5] : [6, 5];
+    return { cols: lat[0], rows: lat[1], diag: L >= 3, target: Math.min(Math.round(5 + L * 1.5), 42) };
+  }
+  /* Random walk on a point lattice that never reuses an edge: the walk itself is an Euler trail of the figure. */
+  function genLines(L) {
+    var cf = linesConfig(L), C = cf.cols, R = cf.rows, N = C * R, rnd = mulberry32(L * 15485863 + 2654435), adj = [], i;
+    for (i = 0; i < N; i++) adj.push([]);
+    for (var y = 0; y < R; y++) for (var x = 0; x < C; x++) {
+      var a = y * C + x;
+      var cand = [[1, 0], [0, 1]]; if (cf.diag) cand.push([1, 1], [-1, 1]);
+      cand.forEach(function (d) {
+        var nx = x + d[0], ny = y + d[1];
+        if (nx < 0 || nx >= C || ny >= R) return;
+        var b = ny * C + nx; adj[a].push(b); adj[b].push(a);
+      });
+    }
+    var totalEdges = 0; adj.forEach(function (l) { totalEdges += l.length; }); totalEdges /= 2;
+    var target = Math.min(cf.target, Math.round(totalEdges * 0.72));
+    var best = null, bestScore = Infinity;
+    for (var att = 0; att < 400; att++) {
+      var used = {}, deg = new Int16Array(N), start = (rnd() * N) | 0, cur = start, trail = [start];
+      for (var s = 0; s < target; s++) {
+        var opts = adj[cur].filter(function (b) { return !used[ek(cur, b)]; });
+        if (!opts.length) break;
+        var ws = opts.map(function (b) {
+          var wgt = deg[b] > 0 ? 1.7 : 1;                       // revisiting builds loops & branches
+          var bx = b % C, by = (b / C) | 0, cx = cur % C, cy = (cur / C) | 0;
+          if (bx !== cx && by !== cy) wgt *= 0.75;              // keep diagonals a little rarer
+          var rest = adj[b].filter(function (c) { return c !== cur && !used[ek(b, c)]; }).length;
+          if (rest === 0 && s < target - 1) wgt *= 0.15;         // avoid getting stuck early
+          return wgt;
+        });
+        var tot = ws.reduce(function (p, q) { return p + q; }, 0), r = rnd() * tot, k = 0;
+        while (r > ws[k]) { r -= ws[k]; k++; }
+        var nb = opts[Math.min(k, opts.length - 1)];
+        used[ek(cur, nb)] = 1; deg[cur]++; deg[nb]++; trail.push(nb); cur = nb;
+      }
+      var E = trail.length - 1, branch = 0, odd = 0, nodes = 0;
+      for (i = 0; i < N; i++) { if (deg[i]) nodes++; if (deg[i] >= 3) branch++; if (deg[i] % 2) odd++; }
+      var wantB = Math.max(1, Math.floor(E / 6));
+      var score = Math.abs(E - target) * 3 + Math.max(0, wantB - branch) * 4 + (L >= 4 && odd === 0 ? 1 : 0) + (nodes < Math.min(N, 5) ? 5 : 0);
+      if (score < bestScore) { bestScore = score; best = trail; }
+      if (score === 0) break;
+    }
+    // compact: keep only used nodes
+    var map = {}, nodesOut = [], edges = [], seenE = {};
+    best.forEach(function (id) { if (!(id in map)) { map[id] = nodesOut.length; nodesOut.push([id % C, (id / C) | 0]); } });
+    var sol = best.map(function (id) { return map[id]; });
+    for (i = 1; i < sol.length; i++) { var key = ek(sol[i - 1], sol[i]); if (!seenE[key]) { seenE[key] = 1; edges.push([sol[i - 1], sol[i]]); } }
+    return { nodes: nodesOut, edges: edges, solution: sol };
+  }
+  function ek(a, b) { return a < b ? a + "-" + b : b + "-" + a; }
+
+  /* Euler-trail feasibility of the remaining (unused) edges, starting from `cur`. */
+  function canFinish(lv, usedSet, cur) {
+    var deg = {}, adjm = {}, m = 0;
+    lv.edges.forEach(function (e) {
+      if (usedSet[ek(e[0], e[1])]) return;
+      m++; deg[e[0]] = (deg[e[0]] || 0) + 1; deg[e[1]] = (deg[e[1]] || 0) + 1;
+      (adjm[e[0]] = adjm[e[0]] || []).push(e[1]); (adjm[e[1]] = adjm[e[1]] || []).push(e[0]);
+    });
+    if (!m) return true;
+    if (!deg[cur]) return false;
+    var odd = Object.keys(deg).filter(function (k) { return deg[k] % 2; });
+    if (!(odd.length === 0 || (odd.length === 2 && odd.indexOf(String(cur)) >= 0))) return false;
+    var seen = {}, st = [cur], c = 0; seen[cur] = 1;
+    while (st.length) { var x = st.pop(); c++; adjm[x].forEach(function (y) { if (!seen[y]) { seen[y] = 1; st.push(y); } }); }
+    return c === Object.keys(deg).length;
+  }
+
+  window.__onestroke = { genCells: genCells, genLines: genLines, solveCells: solveCells, canFinish: canFinish, ek: ek }; // for tests
+
+  /* ================= state ================= */
+  var mode = lsGet(KEY + "mode") === "lines" ? "lines" : "cells";
+  var P = {}; // per-mode progress { level, cleared, path }
+  ["cells", "lines"].forEach(function (m) {
+    var lvl = parseInt(lsGet(KEY + m + ".level"), 10), clr = parseInt(lsGet(KEY + m + ".cleared"), 10);
+    clr = clr > 0 ? clr : 0; lvl = lvl > 0 ? Math.min(lvl, clr + 1) : 1;
+    var st = lsJSON(KEY + m + ".state");
+    P[m] = { level: lvl, cleared: clr, path: st && st.level === lvl && Array.isArray(st.path) ? st.path : null };
+  });
+  var LV = null, path = [], hintT = null, solved = false, cache = {};
+  function getLevel(m, L) { var k = m + L; if (!cache[k]) cache[k] = m === "cells" ? genCells(L) : genLines(L); return cache[k]; }
+  function saveProgress() {
+    var p = P[mode];
+    lsSet(KEY + "mode", mode);
+    lsSet(KEY + mode + ".level", String(p.level));
+    lsSet(KEY + mode + ".cleared", String(p.cleared));
+    lsSet(KEY + mode + ".state", JSON.stringify({ level: p.level, path: path }));
+  }
+  function validPath(pth) {
+    if (!Array.isArray(pth)) return false;
+    if (mode === "cells") {
+      if (!pth.length || pth[0] !== LV.start) return false;
+      var seen = {};
+      for (var i = 0; i < pth.length; i++) {
+        var c = pth[i]; if (typeof c !== "number" || c < 0 || c >= LV.w * LV.h || LV.wall[c] || seen[c]) return false; seen[c] = 1;
+        if (i && nbrs4(pth[i - 1], LV.w, LV.h).indexOf(c) < 0) return false;
+      }
+      return true;
+    }
+    var used = {}, es = edgeSet();
+    for (i = 0; i < pth.length; i++) {
+      if (typeof pth[i] !== "number" || pth[i] < 0 || pth[i] >= LV.nodes.length) return false;
+      if (i) { var k = ek(pth[i - 1], pth[i]); if (!es[k] || used[k]) return false; used[k] = 1; }
+    }
+    return true;
+  }
+  var _es = null, _esLv = null;
+  function edgeSet() { if (_esLv !== LV) { _es = {}; LV.edges.forEach(function (e) { _es[ek(e[0], e[1])] = 1; }); _esLv = LV; } return _es; }
+  function usedSet() { var u = {}; for (var i = 1; i < path.length; i++) u[ek(path[i - 1], path[i])] = 1; return u; }
+
+  function loadLevel(restorePath) {
+    var p = P[mode];
+    LV = getLevel(mode, p.level);
+    path = restorePath && validPath(restorePath) ? restorePath.slice() : (mode === "cells" ? [LV.start] : []);
+    hintT = null; solved = false;
+    $("svg").classList.remove("won");
+    buildBoard(); render(); saveProgress();
+    if (isComplete()) { solved = true; setTimeout(function () { showWin(false); }, 200); }
+    var m = mode, nx = p.level + 1; // warm the cache for the next level while idle
+    setTimeout(function () { getLevel(m, nx); }, 400);
+  }
+
+  /* ================= rendering ================= */
+  var svg = $("svg"), gBase, gTrail, gTop;
+  function buildBoard() {
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    svg.classList.toggle("lines", mode === "lines");
+    if (mode === "cells") {
+      svg.setAttribute("viewBox", "-0.1 -0.1 " + (LV.w + .2) + " " + (LV.h + .2));
+      gBase = el("g", {}, svg);
+      for (var i = 0; i < LV.w * LV.h; i++) {
+        var x = i % LV.w, y = (i / LV.w) | 0;
+        var r = el("rect", { x: x + .05, y: y + .05, width: .9, height: .9, rx: .17, "class": "cellr" + (LV.wall[i] ? " wall" : ""), "data-i": i }, gBase);
+        if (LV.wall[i]) {
+          el("path", { d: "M" + (x + .38) + " " + (y + .38) + "L" + (x + .62) + " " + (y + .62) + "M" + (x + .62) + " " + (y + .38) + "L" + (x + .38) + " " + (y + .62), "class": "wallx" }, gBase);
+        }
+      }
+    } else {
+      var xs = LV.nodes.map(function (p) { return p[0]; }), ys = LV.nodes.map(function (p) { return p[1]; });
+      var x0 = Math.min.apply(null, xs), y0 = Math.min.apply(null, ys), x1 = Math.max.apply(null, xs), y1 = Math.max.apply(null, ys);
+      svg.setAttribute("viewBox", (x0 - .55) + " " + (y0 - .55) + " " + (x1 - x0 + 1.1) + " " + (y1 - y0 + 1.1));
+      gBase = el("g", {}, svg);
+      LV.edges.forEach(function (e) {
+        var a = LV.nodes[e[0]], b = LV.nodes[e[1]];
+        el("line", { x1: a[0], y1: a[1], x2: b[0], y2: b[1], "class": "edge" }, gBase);
+      });
+    }
+    gTrail = el("g", {}, svg);
+    gTop = el("g", {}, svg);
+  }
+  function center(i) { return mode === "cells" ? [i % LV.w + .5, ((i / LV.w) | 0) + .5] : LV.nodes[i]; }
+  function render() {
+    var i;
+    while (gTrail.firstChild) gTrail.removeChild(gTrail.firstChild);
+    while (gTop.firstChild) gTop.removeChild(gTop.firstChild);
+    var segs = path.length - 1, total = mode === "cells" ? LV.open - 1 : LV.edges.length, sw = mode === "cells" ? .36 : .17;
+    if (mode === "cells") {
+      var inPath = {}; path.forEach(function (c) { inPath[c] = 1; });
+      var rects = gBase.querySelectorAll("rect");
+      for (i = 0; i < rects.length; i++) if (!LV.wall[i]) rects[i].setAttribute("class", "cellr" + (inPath[i] ? " vis" : ""));
+    }
+    for (i = 1; i < path.length; i++) {
+      var a = center(path[i - 1]), b = center(path[i]);
+      el("line", { x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke: gradAt(total > 1 ? (i - 1) / (total - 1) : 0), "stroke-width": sw,
+        "stroke-linecap": "round", "class": "seg" }, gTrail);
+    }
+    if (mode === "lines") {
+      var deg = {}, us = usedSet(), left = {};
+      LV.edges.forEach(function (e) { deg[e[0]] = (deg[e[0]] || 0) + 1; deg[e[1]] = (deg[e[1]] || 0) + 1;
+        if (!us[ek(e[0], e[1])]) { left[e[0]] = 1; left[e[1]] = 1; } });
+      LV.nodes.forEach(function (p, k) { el("circle", { cx: p[0], cy: p[1], r: .13, "class": "node" + (left[k] ? "" : " done"), "data-n": k }, gTop); });
+    } else {
+      var s = center(LV.start);
+      el("circle", { cx: s[0], cy: s[1], r: .3, "class": "startmark" }, gTop);
+    }
+    if (path.length) {
+      var h = center(path[path.length - 1]);
+      el("circle", { cx: h[0], cy: h[1], r: mode === "cells" ? .2 : .17, "class": "head" }, gTop);
+    }
+    if (hintT != null) {
+      var t = center(hintT);
+      if (path.length) { var f = center(path[path.length - 1]); el("line", { x1: f[0], y1: f[1], x2: t[0], y2: t[1], "class": "hintedge" }, gTop); }
+      el("circle", { cx: t[0], cy: t[1], r: mode === "cells" ? .34 : .28, "class": "hintmark" }, gTop);
+    }
+    renderUI();
+  }
+  function remaining() { return mode === "cells" ? LV.open - path.length : LV.edges.length - Math.max(0, path.length - 1); }
+  function isComplete() { return remaining() === 0 && path.length > 0; }
+  function renderUI() {
+    var p = P[mode];
+    var tabs = document.querySelectorAll(".tab");
+    for (var i = 0; i < tabs.length; i++) { tabs[i].classList.toggle("on", tabs[i].dataset.mode === mode); tabs[i].setAttribute("aria-selected", tabs[i].dataset.mode === mode); }
+    $("lvBtn").textContent = "Lv " + p.level + " ▾";
+    $("prevLv").disabled = p.level <= 1;
+    $("nextLv").disabled = p.level > p.cleared;
+    $("pill").innerHTML = (mode === "cells" ? T("マス", "Cells") : T("線", "Lines")) + " · <b>" + T("クリア ", "cleared ") + p.cleared + "</b>";
+    var rem = remaining();
+    $("status").innerHTML = solved ? "🎉 " + T("クリア！", "Cleared!")
+      : mode === "cells" ? T("残り <b>" + rem + "</b> マス", "<b>" + rem + "</b> cells left")
+      : (path.length ? T("残り <b>" + rem + "</b> 本", "<b>" + rem + "</b> lines left") : T("始点をタップ（全 <b>" + rem + "</b> 本）", "Tap a starting dot (<b>" + rem + "</b> lines)"));
+    $("undoBtn").disabled = mode === "cells" ? path.length <= 1 : path.length === 0;
+    $("restartBtn").disabled = $("undoBtn").disabled;
+  }
+  function refresh() { if (LV) render(); }
+  var toastTimer;
+  function toast(msg) { var t = $("toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.classList.remove("show"); }, 1800); }
+
+  /* ================= interaction ================= */
+  function svgPoint(e) {
+    var m = svg.getScreenCTM(); if (!m) return null;
+    var pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
+    return pt.matrixTransform(m.inverse());
+  }
+  function cellAt(p) {
+    var x = Math.floor(p.x), y = Math.floor(p.y);
+    if (x < 0 || y < 0 || x >= LV.w || y >= LV.h) return -1;
+    return y * LV.w + x;
+  }
+  function nodeAt(p, r) {
+    var best = -1, bd = r * r;
+    LV.nodes.forEach(function (q, k) { var d = (q[0] - p.x) * (q[0] - p.x) + (q[1] - p.y) * (q[1] - p.y); if (d <= bd) { bd = d; best = k; } });
+    return best;
+  }
+  function changed() { hintT = null; render(); saveProgress(); if (isComplete() && !solved) win(); }
+
+  // Cells: step into cell c (drag or tap). Returns true if something changed.
+  function enterCell(c) {
+    if (c < 0 || LV.wall[c]) return false;
+    var last = path[path.length - 1];
+    if (c === last) return false;
+    if (path.length >= 2 && c === path[path.length - 2]) { path.pop(); return true; }
+    if (path.indexOf(c) >= 0) return false;
+    if (nbrs4(last, LV.w, LV.h).indexOf(c) < 0) return false;
+    path.push(c); return true;
+  }
+  // Lines: move to node k along an unused edge, or step back along the last edge.
+  function enterNode(k) {
+    if (k < 0) return false;
+    if (!path.length) { path.push(k); return true; }
+    var cur = path[path.length - 1];
+    if (k === cur) return false;
+    if (path.length >= 2 && k === path[path.length - 2]) { path.pop(); return true; }
+    var key = ek(cur, k);
+    if (!edgeSet()[key] || usedSet()[key]) return false;
+    path.push(k); return true;
+  }
+
+  var drag = null;
+  svg.addEventListener("pointerdown", function (e) {
+    if (solved || !LV) return;
+    var p = svgPoint(e); if (!p) return;
+    e.preventDefault();
+    try { svg.setPointerCapture(e.pointerId); } catch (er) {}
+    var ch = false;
+    if (mode === "cells") {
+      var c = cellAt(p);
+      if (c >= 0 && !LV.wall[c]) {
+        var idx = path.indexOf(c);
+        if (idx >= 0 && idx < path.length - 1) { path.length = idx + 1; ch = true; }
+        else if (idx < 0) ch = enterCell(c);
+      }
+    } else {
+      var k = nodeAt(p, .45);
+      if (k >= 0) {
+        if (!path.length || (path.length === 1 && k !== path[0] && !edgeSet()[ek(path[0], k)])) { path = [k]; ch = true; }
+        else ch = enterNode(k);
+      }
+    }
+    drag = { id: e.pointerId, x: p.x, y: p.y };
+    if (ch) changed();
+  });
+  svg.addEventListener("pointermove", function (e) {
+    if (!drag || drag.id !== e.pointerId || solved) return;
+    var p = svgPoint(e); if (!p) return;
+    var dx = p.x - drag.x, dy = p.y - drag.y, dist = Math.sqrt(dx * dx + dy * dy), steps = Math.max(1, Math.ceil(dist / 0.12)), ch = false;
+    for (var s = 1; s <= steps && !solved; s++) {
+      var q = { x: drag.x + dx * s / steps, y: drag.y + dy * s / steps };
+      if (mode === "cells") {
+        // ignore points too close to a cell border to avoid jitter
+        var fx = q.x - Math.floor(q.x), fy = q.y - Math.floor(q.y);
+        if (fx < .12 || fx > .88 || fy < .12 || fy > .88) continue;
+        if (enterCell(cellAt(q))) ch = true;
+      } else if (enterNode(nodeAt(q, .3))) ch = true;
+      if (ch && isComplete()) break;
+    }
+    drag.x = p.x; drag.y = p.y;
+    if (ch) changed();
+  });
+  function endDrag(e) { if (drag && drag.id === e.pointerId) drag = null; }
+  svg.addEventListener("pointerup", endDrag);
+  svg.addEventListener("pointercancel", endDrag);
+
+  function undo() {
+    if (solved) return;
+    if (mode === "cells" ? path.length > 1 : path.length > 0) { path.pop(); changed(); }
+  }
+  function restart() {
+    if (solved) return;
+    path = mode === "cells" ? [LV.start] : []; changed();
+  }
+  function hint() {
+    if (solved) return;
+    var sol = LV.solution, i, next = null, rewound = false;
+    if (mode === "cells") {
+      var prefix = true;
+      for (i = 0; i < path.length; i++) if (path[i] !== sol[i]) { prefix = false; break; }
+      if (prefix) next = sol[path.length];
+      else {
+        var r = solveCells(LV, path, 250);
+        if (r) next = r[path.length];
+        else {
+          var k = 0; while (k < path.length && path[k] === sol[k]) k++;
+          path.length = Math.max(1, k); rewound = r === null ? true : "unknown"; next = sol[path.length];
+        }
+      }
+    } else {
+      if (!path.length) next = sol[0];
+      else {
+        var us = usedSet();
+        while (path.length && !canFinish(LV, us, path[path.length - 1])) { path.pop(); us = usedSet(); rewound = true; }
+        if (!path.length) next = sol[0];
+        else {
+          var cur = path[path.length - 1], pre = true;
+          for (i = 0; i < path.length; i++) if (path[i] !== sol[i]) { pre = false; break; }
+          if (pre && path.length < sol.length) next = sol[path.length];
+          else {
+            var nbs = []; LV.edges.forEach(function (e) { if (us[ek(e[0], e[1])]) return; if (e[0] === cur) nbs.push(e[1]); else if (e[1] === cur) nbs.push(e[0]); });
+            for (i = 0; i < nbs.length; i++) { // Fleury: never burn a bridge unless forced
+              us[ek(cur, nbs[i])] = 1;
+              var okk = canFinish(LV, us, nbs[i]);
+              delete us[ek(cur, nbs[i])];
+              if (okk) { next = nbs[i]; break; }
+            }
+          }
+        }
+      }
+    }
+    if (rewound) {
+      render(); saveProgress();
+      toast(rewound === "unknown" ? T("解けるルートまで戻しました", "Rewound to a known solvable route") : T("行き止まり！ 描ける所まで戻しました", "Dead end — rewound to a solvable point"));
+    }
+    else if (mode === "lines" && !path.length) toast(T("光る点からスタート！", "Start at the glowing dot!"));
+    hintT = next; render();
+  }
+
+  /* ================= win / levels ================= */
+  function win() {
+    solved = true;
+    var p = P[mode];
+    if (p.level > p.cleared) p.cleared = p.level;
+    saveProgress(); render();
+    svg.classList.remove("won"); void svg.getBoundingClientRect(); svg.classList.add("won");
+    confetti();
+    setTimeout(function () { showWin(true); }, 900);
+  }
+  function showWin() {
+    $("winLv").textContent = "Lv " + P[mode].level;
+    $("winMsg").textContent = mode === "cells" ? T(LV.open + " マスを一筆で制覇！", "All " + LV.open + " cells in one stroke!")
+      : T(LV.edges.length + " 本の線を一筆で！", "All " + LV.edges.length + " lines in one stroke!");
+    $("winDlg").classList.remove("hidden");
+  }
+  function gotoLevel(L) {
+    var p = P[mode];
+    L = Math.max(1, Math.min(L, p.cleared + 1));
+    p.level = L; loadLevel(null);
+  }
+  $("winNext").addEventListener("click", function () { $("winDlg").classList.add("hidden"); gotoLevel(P[mode].level + 1); });
+  $("winAgain").addEventListener("click", function () { $("winDlg").classList.add("hidden"); loadLevel(null); });
+  $("prevLv").addEventListener("click", function () { gotoLevel(P[mode].level - 1); });
+  $("nextLv").addEventListener("click", function () { gotoLevel(P[mode].level + 1); });
+  $("lvBtn").addEventListener("click", function () {
+    var p = P[mode], grid = $("lvGrid"), N = Math.max(30, Math.ceil((p.cleared + 2) / 6) * 6);
+    grid.innerHTML = "";
+    for (var L = 1; L <= N; L++) {
+      var b = document.createElement("button"); b.type = "button"; b.textContent = L <= p.cleared + 1 ? L : "🔒";
+      b.disabled = L > p.cleared + 1;
+      if (L <= p.cleared) b.className = "clr";
+      if (L === p.level) b.className = "cur";
+      (function (L) { b.addEventListener("click", function () { $("lvDlg").classList.add("hidden"); gotoLevel(L); }); })(L);
+      grid.appendChild(b);
+    }
+    $("lvInfo").textContent = (mode === "cells" ? T("マス", "Cells") : T("線", "Lines")) + T(" モード ・ クリア済み " + p.cleared, " mode · " + p.cleared + " cleared");
+    $("lvDlg").classList.remove("hidden");
+  });
+  $("lvClose").addEventListener("click", function () { $("lvDlg").classList.add("hidden"); });
+  var tabs = document.querySelectorAll(".tab");
+  for (var ti = 0; ti < tabs.length; ti++) tabs[ti].addEventListener("click", function () {
+    var m = this.dataset.mode; if (m === mode) return;
+    saveProgress(); P[mode].path = path.slice();
+    mode = m; lsSet(KEY + "mode", mode); loadLevel(P[mode].path);
+  });
+  $("undoBtn").addEventListener("click", undo);
+  $("restartBtn").addEventListener("click", restart);
+  $("hintBtn").addEventListener("click", hint);
+  $("langBtn").addEventListener("click", function () { lang = lang === "ja" ? "en" : "ja"; lsSet("lang", lang); applyLang(); refresh(); });
+  $("helpBtn").addEventListener("click", function () { $("helpDlg").classList.remove("hidden"); });
+  $("closeHelp").addEventListener("click", function () { $("helpDlg").classList.add("hidden"); });
+  ["helpDlg", "lvDlg"].forEach(function (id) { $(id).addEventListener("click", function (e) { if (e.target === $(id)) $(id).classList.add("hidden"); }); });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") { ["helpDlg", "lvDlg"].forEach(function (id) { $(id).classList.add("hidden"); }); return; }
+    if (!$("winDlg").classList.contains("hidden")) { if (e.key === "Enter") $("winNext").click(); return; }
+    if ((e.ctrlKey || e.metaKey) && (e.key === "z" || e.key === "Z")) { e.preventDefault(); undo(); return; }
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.key === "Backspace" || e.key === "u" || e.key === "U") { e.preventDefault(); undo(); return; }
+    if (e.key === "r" || e.key === "R") { restart(); return; }
+    if (e.key === "h" || e.key === "H") { hint(); return; }
+    if (mode === "cells" && !solved) {
+      var d = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] }[e.key];
+      if (d) {
+        e.preventDefault();
+        var last = path[path.length - 1], x = last % LV.w + d[0], y = ((last / LV.w) | 0) + d[1];
+        if (x >= 0 && y >= 0 && x < LV.w && y < LV.h && enterCell(y * LV.w + x)) changed();
+      }
+    }
+  });
+
+  /* ================= confetti ================= */
+  function confetti() {
+    var cv = $("fx"), ctx = cv.getContext("2d"), W = cv.width = innerWidth, H = cv.height = innerHeight, Q = [], t0 = performance.now();
+    var cols = ["#4de1ff", "#ff5ca8", "#ffd166", "#5ef0a0", "#8b7bff"];
+    for (var i = 0; i < 120; i++) Q.push({ x: W / 2 + (Math.random() - .5) * W * .4, y: H * .5, vx: (Math.random() - .5) * 12, vy: -Math.random() * 12 - 4,
+      r: Math.random() * 6.28, vr: (Math.random() - .5) * .3, s: 5 + Math.random() * 6, c: cols[i % cols.length] });
+    (function frame(now) {
+      var t = now - t0; ctx.clearRect(0, 0, W, H);
+      Q.forEach(function (p) {
+        p.vy += .3; p.vx *= .99; p.x += p.vx; p.y += p.vy; p.r += p.vr;
+        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r); ctx.globalAlpha = Math.max(0, 1 - t / 2400);
+        ctx.fillStyle = p.c; ctx.fillRect(-p.s / 2, -p.s / 4, p.s, p.s / 2); ctx.restore();
+      });
+      if (t < 2400) requestAnimationFrame(frame); else ctx.clearRect(0, 0, W, H);
+    })(t0);
+  }
+
+  loadLevel(P[mode].path);
+  if (!lsGet(KEY + "seenHelp")) { lsSet(KEY + "seenHelp", "1"); $("helpDlg").classList.remove("hidden"); }
+})();
+</script>
+</body>
+</html>
