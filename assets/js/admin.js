@@ -82,7 +82,7 @@
       fields: [
         { k: "title", t: "bi", l: { ja: "タイトル", en: "Title" } },
         { k: "id", t: "text", l: { ja: "ID（フォルダ名 games/ID/）", en: "ID (folder name games/ID/)" } },
-        { k: "type", t: "select", o: [["game", "🎮 Game"], ["puzzle", "🧩 Puzzle"], ["tool", "🛠 Tool"]], l: { ja: "種類", en: "Type" } },
+        { k: "type", t: "select", o: [["game", "🎮 アクション / Action"], ["puzzle", "🧩 パズル / Puzzle"], ["board", "♟️ ボード / Board"], ["quiz", "💡 クイズ / Quiz"], ["music", "🎵 音楽 / Music"], ["tool", "🛠 ツール / Tool"]], l: { ja: "種類", en: "Type" } },
         { k: "emoji", t: "text", l: { ja: "絵文字（サムネ未設定時）", en: "Emoji (when no thumbnail)" } },
         { k: "date", t: "text", l: { ja: "公開日（YYYY-MM）", en: "Date (YYYY-MM)" } },
         { k: "path", t: "text", l: { ja: "起動ファイル（例 games/ID/index.html または外部URL）", en: "Entry file (e.g. games/ID/index.html or external URL)" } },
