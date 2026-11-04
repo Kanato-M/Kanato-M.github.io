@@ -4,16 +4,154 @@
       "id": "timing-challenge",
       "type": "game",
       "emoji": "⏱️",
-      "title": { "ja": "タイミング・チャレンジ", "en": "Timing Challenge" },
+      "title": {
+        "ja": "タイミング・チャレンジ",
+        "en": "Timing Challenge"
+      },
       "description": {
         "ja": "粒子がセンサーを通過する瞬間にタップ！ あなたの「時間分解能」を測って AC-LGAD（約30ピコ秒）と比べてみよう。",
         "en": "Tap the instant a particle crosses the sensor! Measure your own “time resolution” and compare it with an AC-LGAD (~30 ps)."
       },
       "path": "games/timing-challenge/index.html",
       "thumb": "",
-      "tags": ["reflex", "physics"],
+      "tags": [
+        "reflex",
+        "physics"
+      ],
       "date": "2026-11",
       "source": "https://github.com/Kanato-M/Kanato-M.github.io/tree/main/games/timing-challenge"
+    },
+    {
+      "id": "shogi",
+      "type": "board",
+      "emoji": "☗",
+      "title": {
+        "ja": "将棋",
+        "en": "Shogi"
+      },
+      "description": {
+        "ja": "CPU（4段階）や2人で遊べる本格将棋。成り・持ち駒・二歩・打ち歩詰め・千日手まで対応し、棋譜も記録。",
+        "en": "Full-rules shogi against a 4-level CPU or a friend — promotions, drops, nifu, pawn-drop mate and repetition all handled, with a move record."
+      },
+      "path": "games/shogi/index.html",
+      "thumb": "",
+      "tags": [
+        "board-game",
+        "strategy",
+        "vs-cpu"
+      ],
+      "date": "2026-11",
+      "source": "https://github.com/Kanato-M/Kanato-M.github.io/tree/main/games/shogi"
+    },
+    {
+      "id": "sudoku",
+      "type": "puzzle",
+      "emoji": "🔢",
+      "title": {
+        "ja": "数独",
+        "en": "Sudoku"
+      },
+      "description": {
+        "ja": "解は必ず1通り。4段階の難易度で自動生成される数独を、メモ機能やヒントを使って解こう。",
+        "en": "Procedurally generated Sudoku with a guaranteed unique solution, four difficulty levels, pencil marks and hints."
+      },
+      "path": "games/sudoku/index.html",
+      "thumb": "",
+      "tags": [
+        "puzzle",
+        "logic",
+        "numbers"
+      ],
+      "date": "2026-11",
+      "source": "https://github.com/Kanato-M/Kanato-M.github.io/tree/main/games/sudoku"
+    },
+    {
+      "id": "one-stroke",
+      "type": "puzzle",
+      "emoji": "✏️",
+      "title": {
+        "ja": "一筆書きパズル",
+        "en": "One-Stroke Puzzle"
+      },
+      "description": {
+        "ja": "全マスを一筆で巡る「マス」と、図形の線を一度ずつなぞる「線」（オイラー路）。2つのモードで遊ぶ自動生成パズル。",
+        "en": "Two modes of procedurally generated one-stroke puzzles: visit every cell once, or trace every line once (an Euler trail)."
+      },
+      "path": "games/one-stroke/index.html",
+      "thumb": "",
+      "tags": [
+        "puzzle",
+        "math",
+        "graph"
+      ],
+      "date": "2026-11",
+      "source": "https://github.com/Kanato-M/Kanato-M.github.io/tree/main/games/one-stroke"
+    },
+    {
+      "id": "fermi",
+      "type": "quiz",
+      "emoji": "🧮",
+      "title": {
+        "ja": "フェルミ推定",
+        "en": "Fermi Estimation"
+      },
+      "description": {
+        "ja": "心拍数から地球の大気の重さまで、知っている量を掛け合わせて「桁」を当てるクイズ。対数の数直線とモデル解答つき。",
+        "en": "Estimate everything from your heartbeats to the mass of Earth's atmosphere by multiplying what you know — scored by orders of magnitude, with model solutions."
+      },
+      "path": "games/fermi/index.html",
+      "thumb": "",
+      "tags": [
+        "quiz",
+        "physics",
+        "estimation"
+      ],
+      "date": "2026-11",
+      "source": "https://github.com/Kanato-M/Kanato-M.github.io/tree/main/games/fermi"
+    },
+    {
+      "id": "slot",
+      "type": "game",
+      "emoji": "🎰",
+      "title": {
+        "ja": "素粒子スロット",
+        "en": "Particle Slot"
+      },
+      "description": {
+        "ja": "クォークやヒッグス粒子をそろえる、架空通貨 GeV のスロット。目押しもでき、配当表をタップすると粒子の豆知識が読める。",
+        "en": "A particle-physics slot machine played for fictional GeV: line up quarks, gluons and the rare Higgs, try a skill stop, and tap the paytable for particle facts."
+      },
+      "path": "games/slot/index.html",
+      "thumb": "",
+      "tags": [
+        "casual",
+        "physics",
+        "luck"
+      ],
+      "date": "2026-11",
+      "source": "https://github.com/Kanato-M/Kanato-M.github.io/tree/main/games/slot"
+    },
+    {
+      "id": "perfect-pitch",
+      "type": "music",
+      "emoji": "🎹",
+      "title": {
+        "ja": "絶対音感ゲーム",
+        "en": "Perfect Pitch Trainer"
+      },
+      "description": {
+        "ja": "鳴った音を鍵盤で当てる絶対音感トレーナー。単音・和音・練習モード、ドレミ／CDE／ハニホ表記、苦手な音のヒートマップつき。",
+        "en": "Train your perfect pitch: name single notes or triads on an on-screen keyboard, with Do-Re-Mi / C-D-E / Japanese note names and a per-note accuracy heatmap."
+      },
+      "path": "games/perfect-pitch/index.html",
+      "thumb": "",
+      "tags": [
+        "music",
+        "ear-training",
+        "audio"
+      ],
+      "date": "2026-11",
+      "source": "https://github.com/Kanato-M/Kanato-M.github.io/tree/main/games/perfect-pitch"
     }
   ]
 }

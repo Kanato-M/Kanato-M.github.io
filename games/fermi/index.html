@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fermi Estimation</title>
+<style>
+  :root { --bg:#0a0f1f; --fg:#e9eefb; --muted:#98a3c0; --c1:#4de1ff; --c2:#ff5ca8; --c3:#ffd166; --ok:#5ef0a0; --vi:#8b7bff; --bad:#ff6b8b;
+    --card:rgba(255,255,255,.045); --card2:rgba(255,255,255,.08); --line:rgba(255,255,255,.12); --btnink:#07101f; --shadow:0 10px 30px rgba(0,0,0,.35); color-scheme:dark; }
+  body[data-t="light"] { --bg:#f6f7fb; --fg:#121a30; --muted:#5a6683; --c1:#0b8fb9; --c2:#d42f7c; --c3:#a8680a; --ok:#118a52; --vi:#5b4bd6; --bad:#c92a4f;
+    --card:#ffffff; --card2:#eef1f8; --line:rgba(18,26,48,.12); --btnink:#ffffff; --shadow:0 8px 24px rgba(18,26,48,.08); color-scheme:light; }
+  * { box-sizing:border-box; }
+  html, body { margin:0; height:100%; }
+  body { background:var(--bg); color:var(--fg); font-family:Inter, "Noto Sans JP", "Hiragino Sans", system-ui, sans-serif; line-height:1.55; -webkit-text-size-adjust:100%; }
+  [data-l="en"] .ja, [data-l="ja"] .en { display:none !important; }
+  .mono { font-family:ui-monospace, monospace; }
+  #wrap { display:flex; flex-direction:column; height:100%; }
+  header { display:flex; align-items:center; gap:.5rem; padding:.6rem .9rem; border-bottom:1px solid var(--line); flex-shrink:0; }
+  header h1 { font-size:1rem; margin:0; flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .pill { font-family:ui-monospace, monospace; font-size:.78rem; color:var(--muted); border:1px solid var(--line); border-radius:999px; padding:.2rem .6rem; white-space:nowrap; }
+  button { font:inherit; cursor:pointer; border-radius:999px; border:1px solid var(--line); background:var(--card2); color:var(--fg); padding:.42rem .85rem; transition:transform .08s, background .15s, border-color .15s; touch-action:manipulation; }
+  button:hover { border-color:var(--c1); }
+  button:active { transform:scale(.96); }
+  button:disabled { opacity:.4; cursor:default; transform:none; }
+  button.sm { padding:.3rem .65rem; font-size:.82rem; }
+  button.primary { background:linear-gradient(90deg,var(--c1),var(--c2)); color:var(--btnink); border:0; font-weight:800; padding:.7rem 1.5rem; font-size:1rem; }
+  main { flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+  .container { max-width:760px; margin:0 auto; padding:1rem 1rem 2rem; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:18px; padding:1.1rem 1.2rem; box-shadow:var(--shadow); }
+  .card + .card { margin-top:.9rem; }
+  .hidden { display:none !important; }
+  h2 { margin:.1rem 0 .5rem; font-size:clamp(1.25rem,4vw,1.7rem); line-height:1.3; }
+  .muted { color:var(--muted); }
+  .lead { color:var(--muted); margin:.2rem 0 1rem; }
+  .chips { display:flex; flex-wrap:wrap; gap:.45rem; margin:.4rem 0 1rem; }
+  .chip { padding:.35rem .8rem; font-size:.88rem; }
+  .chip.on { background:linear-gradient(90deg,var(--c1),var(--c2)); color:var(--btnink); border-color:transparent; font-weight:700; }
+  .center { text-align:center; }
+  .row { display:flex; gap:.6rem; flex-wrap:wrap; align-items:center; }
+  .row.c { justify-content:center; }
+  .tag { display:inline-block; font-size:.75rem; padding:.12rem .55rem; border-radius:999px; border:1px solid var(--line); color:var(--muted); }
+  .qtext { font-size:clamp(1.12rem,3.6vw,1.45rem); font-weight:700; line-height:1.45; margin:.55rem 0 .2rem; }
+  .unitline { color:var(--muted); font-size:.9rem; }
+  .estimate { margin:1rem 0 .4rem; padding:.8rem 1rem; border-radius:14px; background:var(--card2); border:1px solid var(--line); display:flex; align-items:baseline; justify-content:center; gap:.5rem; flex-wrap:wrap; }
+  .estimate .val { font-family:ui-monospace, monospace; font-size:clamp(1.6rem,7vw,2.4rem); font-weight:800; background:linear-gradient(90deg,var(--c1),var(--c2)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .estimate .u { color:var(--muted); }
+  sup { font-size:.62em; line-height:0; }
+  .ctl { display:grid; grid-template-columns:7.5rem 1fr auto; gap:.5rem .7rem; align-items:center; margin-top:.7rem; }
+  .ctl label { font-size:.85rem; color:var(--muted); }
+  .ctl input[type=range] { width:100%; accent-color:var(--c1); }
+  .stepper { display:flex; align-items:center; gap:.3rem; }
+  .stepper button { width:2.2rem; height:2.2rem; padding:0; font-weight:800; font-size:1.1rem; }
+  input[type=number], input[type=text] { font:inherit; font-family:ui-monospace, monospace; background:var(--bg); color:var(--fg); border:1px solid var(--line); border-radius:10px; padding:.42rem .55rem; min-width:0; }
+  input[type=number] { width:4.6rem; }
+  input:focus { outline:2px solid var(--c1); outline-offset:1px; }
+  .typed { display:flex; gap:.5rem; align-items:center; margin-top:.8rem; flex-wrap:wrap; }
+  .typed input { flex:1; min-width:9rem; }
+  .err { color:var(--bad); font-size:.82rem; min-height:1.2em; }
+  .actions { display:flex; justify-content:center; margin-top:1rem; }
+  .scoreBig { font-family:ui-monospace, monospace; font-size:clamp(2rem,8vw,3rem); font-weight:900; color:var(--c3); line-height:1; }
+  .badge { display:inline-block; font-weight:800; font-size:.85rem; padding:.25rem .7rem; border-radius:999px; color:var(--btnink); }
+  .b2 { background:var(--ok); } .b10 { background:var(--c1); } .b100 { background:var(--c3); } .bx { background:var(--bad); }
+  .cmp { display:grid; grid-template-columns:1fr 1fr; gap:.6rem; margin:.8rem 0; }
+  .cmp > div { background:var(--card2); border-radius:12px; padding:.55rem .75rem; border:1px solid var(--line); }
+  .cmp .k { font-size:.75rem; color:var(--muted); }
+  .cmp .v { font-family:ui-monospace, monospace; font-weight:800; font-size:1.05rem; word-break:break-word; }
+  .cmp .you .v { color:var(--c2); } .cmp .ans .v { color:var(--c1); }
+  svg.nl { width:100%; height:auto; display:block; margin:.3rem 0 .4rem; overflow:visible; }
+  .steps { list-style:none; padding:0; margin:.4rem 0; }
+  .steps li { display:grid; grid-template-columns:6.8rem 1fr auto; gap:.6rem; align-items:baseline; padding:.42rem 0; border-bottom:1px dashed var(--line); font-size:.92rem; }
+  .steps .f { font-family:ui-monospace, monospace; color:var(--c3); font-weight:700; white-space:nowrap; }
+  .steps .run { font-family:ui-monospace, monospace; color:var(--muted); font-size:.82rem; white-space:nowrap; }
+  .steps li.tot { border-bottom:0; font-weight:700; }
+  .steps li.tot .run { color:var(--c1); font-size:.92rem; }
+  .note { font-size:.88rem; color:var(--muted); background:var(--card2); border-left:3px solid var(--vi); padding:.55rem .8rem; border-radius:0 10px 10px 0; margin-top:.6rem; }
+  h3 { font-size:.95rem; margin:1rem 0 .2rem; }
+  .sumlist { list-style:none; padding:0; margin:.6rem 0 0; text-align:left; }
+  .sumlist li { display:grid; grid-template-columns:1.6rem 1fr auto; gap:.5rem; padding:.4rem 0; border-bottom:1px solid var(--line); font-size:.88rem; align-items:baseline; }
+  .sumlist .p { font-family:ui-monospace, monospace; font-weight:800; }
+  .rank { font-size:1.25rem; font-weight:800; color:var(--c3); margin:.3rem 0; }
+  .best { font-family:ui-monospace, monospace; color:var(--muted); font-size:.88rem; }
+  #help { position:fixed; inset:0; background:rgba(5,8,18,.7); display:flex; align-items:center; justify-content:center; padding:1rem; z-index:20; }
+  #help .card { background:linear-gradient(var(--card2), var(--card2)), var(--bg); max-width:520px; width:100%; max-height:90%; overflow-y:auto; }
+  #help ul { padding-left:1.2rem; margin:.4rem 0; }
+  #help li { margin:.25rem 0; }
+  .kbd { font-family:ui-monospace, monospace; font-size:.8em; border:1px solid var(--line); border-bottom-width:2px; border-radius:5px; padding:0 .3rem; }
+  @media (max-width:520px) {
+    .container { padding:.7rem .7rem 1.6rem; }
+    .card { padding:.9rem .9rem; border-radius:16px; }
+    .ctl { grid-template-columns:1fr auto; }
+    .ctl label { grid-column:1 / -1; margin-bottom:-.3rem; }
+    .steps li { grid-template-columns:5.6rem 1fr; }
+    .steps .run { grid-column:2; }
+    header h1 { font-size:.92rem; }
+  }
+  @media (prefers-reduced-motion:no-preference) { .pop { animation:pop .35s ease-out; } @keyframes pop { from { transform:scale(.9); opacity:0; } to { transform:none; opacity:1; } } }
+</style>
+</head>
+<body data-l="ja" data-t="dark">
+<div id="wrap">
+  <header>
+    <h1>🧮 <span class="ja">フェルミ推定</span><span class="en">Fermi Estimation</span></h1>
+    <span class="pill" id="status">—</span>
+    <button id="langBtn" class="sm" type="button">JA / EN</button>
+    <button id="helpBtn" class="sm" type="button" aria-label="How to play">?</button>
+  </header>
+  <main>
+    <div class="container">
+
+      <!-- Intro -->
+      <section id="intro" class="card">
+        <h2><span class="ja">桁で勝負！フェルミ推定</span><span class="en">Guess the order of magnitude!</span></h2>
+        <p class="lead"><span class="ja">「体の中に陽子は何個？」— 正確な数字は要りません。知っている量を掛け合わせて<b>桁</b>を当てましょう。10問で1000点満点、答えとの比が近いほど高得点です。</span>
+          <span class="en">"How many protons are in your body?" You don't need the exact number — multiply things you know and nail the <b>order of magnitude</b>. 10 questions, 1000 points max; the closer your ratio to the answer, the more you score.</span></p>
+        <div class="muted" style="font-size:.85rem"><span class="ja">ジャンル</span><span class="en">Category</span></div>
+        <div class="chips" id="cats"></div>
+        <div class="row c" style="flex-direction:column;gap:.5rem">
+          <button class="primary" id="startBtn" type="button"><span class="ja">スタート</span><span class="en">Start</span></button>
+          <div class="best" id="bestIntro"></div>
+        </div>
+      </section>
+
+      <!-- Question -->
+      <section id="quiz" class="hidden">
+        <div class="card">
+          <div class="row" style="justify-content:space-between">
+            <span class="tag" id="qcat"></span>
+            <span class="muted mono" style="font-size:.85rem" id="qnum"></span>
+          </div>
+          <div class="qtext" id="qtext"></div>
+          <div class="unitline" id="qunit"></div>
+
+          <div id="inputArea">
+            <div class="estimate"><span class="val" id="estVal">1.0 × 10<sup>0</sup></span><span class="u" id="estUnit"></span></div>
+            <div class="ctl">
+              <label for="mRange"><span class="ja">仮数（1〜9.9）</span><span class="en">Mantissa (1–9.9)</span></label>
+              <input type="range" id="mRange" min="1" max="9.9" step="0.1" value="1" aria-label="mantissa">
+              <input type="number" id="mNum" min="1" max="9.99" step="0.1" value="1" aria-label="mantissa value">
+              <label for="eRange"><span class="ja">指数（10 の何乗）</span><span class="en">Exponent (power of 10)</span></label>
+              <input type="range" id="eRange" min="-30" max="55" step="1" value="0" aria-label="exponent">
+              <div class="stepper">
+                <button type="button" id="eMinus" aria-label="exponent minus">−</button>
+                <span class="mono" id="eVal" style="min-width:2.2rem;text-align:center;font-weight:800">0</span>
+                <button type="button" id="ePlus" aria-label="exponent plus">+</button>
+              </div>
+            </div>
+            <div class="typed">
+              <input type="text" id="typed" inputmode="text" autocomplete="off" spellcheck="false" placeholder="3e8, 2.5×10^-24, 120000">
+              <button type="button" id="typedBtn" class="sm"><span class="ja">反映</span><span class="en">Set</span></button>
+            </div>
+            <div class="err" id="typedErr"></div>
+            <div class="actions"><button class="primary" id="submitBtn" type="button"><span class="ja">この値で回答</span><span class="en">Lock in answer</span></button></div>
+          </div>
+        </div>
+
+        <div id="reveal" class="card hidden">
+          <div class="row" style="justify-content:space-between;align-items:flex-end">
+            <div><div class="muted" style="font-size:.8rem"><span class="ja">獲得点</span><span class="en">Points</span></div><div class="scoreBig pop" id="ptsVal">0</div></div>
+            <div style="text-align:right"><span class="badge" id="badge"></span><div class="muted mono" style="font-size:.8rem;margin-top:.3rem" id="ratio"></div></div>
+          </div>
+          <div class="cmp">
+            <div class="you"><div class="k"><span class="ja">あなたの推定</span><span class="en">Your estimate</span></div><div class="v" id="youVal"></div></div>
+            <div class="ans"><div class="k"><span class="ja">参考値</span><span class="en">Reference</span></div><div class="v" id="ansVal"></div></div>
+          </div>
+          <svg class="nl" id="nl" viewBox="0 0 600 86" role="img" aria-label="log-scale number line"></svg>
+          <h3><span class="ja">モデル解答（フェルミ分解）</span><span class="en">Model breakdown</span></h3>
+          <ul class="steps" id="steps"></ul>
+          <div class="note" id="note"></div>
+          <div class="actions"><button class="primary" id="nextBtn" type="button"></button></div>
+        </div>
+      </section>
+
+      <!-- End -->
+      <section id="end" class="card center hidden">
+        <div class="muted"><span class="ja">合計スコア</span><span class="en">Total score</span></div>
+        <div class="scoreBig pop" id="totalVal" style="font-size:clamp(2.6rem,11vw,4rem)">0</div>
+        <div class="rank" id="rankVal"></div>
+        <div class="best" id="bestEnd"></div>
+        <ul class="sumlist" id="sumList"></ul>
+        <div class="row c" style="margin-top:1.1rem">
+          <button class="primary" id="againBtn" type="button"><span class="ja">もう一度</span><span class="en">Play again</span></button>
+          <button id="menuBtn" type="button"><span class="ja">ジャンル選択へ</span><span class="en">Change category</span></button>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<div id="help" class="hidden" role="dialog" aria-modal="true">
+  <div class="card">
+    <h2 style="font-size:1.2rem">❓ <span class="ja">遊び方</span><span class="en">How to play</span></h2>
+    <div class="ja"><ul>
+      <li>問題の答えを <b>仮数 × 10<sup>指数</sup></b> で作ります。スライダー・±ボタン、または「3e8」「2.5×10^-24」のように直接入力もOK。</li>
+      <li>得点は桁の誤差 e = |log₁₀(推定/答え)| で決まります。e = 0 で100点、e ≥ 3（1000倍ずれ）で0点。</li>
+      <li>「2倍以内」「10倍以内」「100倍以内」のバッジが出ます。</li>
+      <li>回答後、対数の数直線とモデル解答（掛け算の分解）が表示されます。</li>
+      <li><span class="kbd">Enter</span> で回答／次へ。<span class="kbd">↑</span><span class="kbd">↓</span> で指数を変更（入力欄の外で）。</li>
+    </ul></div>
+    <div class="en"><ul>
+      <li>Build your answer as <b>mantissa × 10<sup>exponent</sup></b> with the sliders and ± buttons, or type it directly, e.g. “3e8” or “2.5×10^-24”.</li>
+      <li>Scoring uses the order-of-magnitude error e = |log₁₀(guess/answer)|: 100 pts at e = 0, down to 0 at e ≥ 3 (off by 1000×).</li>
+      <li>Badges: within ×2, ×10 or ×100.</li>
+      <li>After each answer you see a log-scale number line and a model breakdown into factors.</li>
+      <li><span class="kbd">Enter</span> to answer / continue. <span class="kbd">↑</span><span class="kbd">↓</span> change the exponent (outside text boxes).</li>
+    </ul></div>
+    <div class="row c" style="margin-top:.6rem"><button class="primary" id="helpClose" type="button">OK</button></div>
+  </div>
+</div>
+
+<script>
+/* ===== Question bank: each question's reference value a, and model steps [value, ja, en, op] (op "/" = divide). ===== */
+var QUESTIONS = [
+  /* ---------- 日常 / Everyday ---------- */
+  { id:"sand", c:"life", a:9.2e6, u:["粒","grains"],
+    q:["1リットルのボトルに砂粒（直径 約0.5 mm）は何粒入る？","How many sand grains (about 0.5 mm across) fit in a 1-litre bottle?"],
+    s:[[1e6,"1 L = 10⁶ mm³","1 L = 10⁶ mm³"],[0.6,"粒が占める割合（充填率）≈ 60%","Grains fill ≈60% of the volume (packing)"],[0.065,"1粒の体積 (π/6)×(0.5 mm)³ ≈ 0.065 mm³ で割る","Divide by one grain's volume (π/6)(0.5 mm)³ ≈ 0.065 mm³","/"]],
+    n:["直径0.5 mmの球がランダムに詰まる（充填率約0.6）とした計算値。粒径が半分になると数は8倍になります。","Computed for 0.5 mm spheres in random packing (≈60% filled). Halve the grain size and the count goes up 8×."] },
+  { id:"water", c:"life", a:6.7e24, u:["個（水分子）","water molecules"],
+    q:["コップ1杯（200 mL）の水に、水分子は何個ある？","How many water molecules are in a 200 mL glass of water?"],
+    s:[[200,"200 mL の水 ≈ 200 g","200 mL of water ≈ 200 g"],[18,"水のモル質量 18 g/mol で割る → 約11 mol","Divide by water's molar mass, 18 g/mol → ≈11 mol","/"],[6.0e23,"アボガドロ数 6.0×10²³ /mol を掛ける","Multiply by Avogadro's number, 6.0×10²³ /mol"]],
+    n:["200 ÷ 18.02 × 6.022×10²³ ≈ 6.7×10²⁴ 個。","200 ÷ 18.02 × 6.022×10²³ ≈ 6.7×10²⁴ molecules."] },
+  { id:"yen", c:"life", a:2.2e22, u:["個（原子）","atoms"],
+    q:["1円玉1枚に含まれる原子は何個？","How many atoms are in a single 1-yen coin?"],
+    s:[[1,"1円玉は 1.0 g の純アルミニウム","A 1-yen coin is 1.0 g of pure aluminium"],[27,"Al のモル質量 27 g/mol で割る","Divide by aluminium's molar mass, 27 g/mol","/"],[6.0e23,"アボガドロ数を掛ける","Multiply by Avogadro's number"]],
+    n:["1円硬貨は質量ちょうど1 g・アルミニウム100%。1 ÷ 26.98 × 6.022×10²³ ≈ 2.2×10²² 個。","The 1-yen coin is exactly 1 g of 100% aluminium: 1 ÷ 26.98 × 6.022×10²³ ≈ 2.2×10²² atoms."] },
+  { id:"rice", c:"life", a:2.3e5, u:["粒","grains"],
+    q:["5 kg の米袋に、お米は何粒入っている？","How many grains of rice are in a 5 kg bag?"],
+    s:[[5,"5 kg","5 kg"],[1000,"1 kg = 1000 g","1 kg = 1000 g"],[0.022,"1粒 ≈ 22 mg（千粒重 ≈ 22 g）で割る","Divide by ≈22 mg per grain (1000-grain weight ≈ 22 g)","/"]],
+    n:["うるち米の千粒重はおよそ 20〜23 g。5000 g ÷ 0.022 g ≈ 23万粒。","Japanese short-grain rice weighs about 20–23 g per 1000 grains, so 5000 g ÷ 0.022 g ≈ 230,000 grains."] },
+  { id:"pool", c:"life", a:6e9, u:["滴","drops"],
+    q:["25 m × 10 m × 深さ1.2 m のプールの水は、何滴分？","How many drops of water fill a pool 25 m × 10 m × 1.2 m deep?"],
+    s:[[300,"体積 25 × 10 × 1.2 = 300 m³","Volume 25 × 10 × 1.2 = 300 m³"],[1e6,"1 m³ = 10⁶ mL","1 m³ = 10⁶ mL"],[20,"1 mL ≈ 20滴（1滴 ≈ 0.05 mL）","1 mL ≈ 20 drops (one drop ≈ 0.05 mL)"]],
+    n:["点滴や薬局方で使われる標準的な1滴 ≈ 0.05 mL を使用。3×10⁸ mL × 20 = 6×10⁹ 滴。","Uses the standard drop of ≈0.05 mL (20 drops per mL): 3×10⁸ mL × 20 = 6×10⁹ drops."] },
+  { id:"room", c:"life", a:1.25e27, u:["個（気体分子）","gas molecules"],
+    q:["4 m × 5 m × 高さ2.5 m の部屋（20 °C, 1気圧）の空気分子は何個？","How many air molecules are in a 4 m × 5 m × 2.5 m room (20 °C, 1 atm)?"],
+    s:[[50,"部屋の体積 4 × 5 × 2.5 = 50 m³","Room volume 4 × 5 × 2.5 = 50 m³"],[1000,"1 m³ = 1000 L","1 m³ = 1000 L"],[24,"気体 1 mol ≈ 24 L（20 °C）で割る","Divide by ≈24 L per mole of gas (20 °C)","/"],[6.0e23,"アボガドロ数を掛ける","Multiply by Avogadro's number"]],
+    n:["理想気体 N = PV/kT = 101325 × 50 / (1.38×10⁻²³ × 293) ≈ 1.25×10²⁷ 個。","Ideal gas: N = PV/kT = 101325 × 50 / (1.38×10⁻²³ × 293) ≈ 1.25×10²⁷."] },
+  { id:"fork", c:"life", a:1.056e5, u:["回","vibrations"],
+    q:["440 Hz の音叉がカラオケ1曲分（4分）鳴り続けたら、何回振動する？","A 440 Hz tuning fork rings for one karaoke song (4 minutes). How many times does it vibrate?"],
+    s:[[440,"毎秒 440 回（A4 = ラ）","440 per second (A4)"],[60,"1分 = 60秒","1 min = 60 s"],[4,"4分間","4 minutes"]],
+    n:["440 × 240 s = 105,600 回。周波数 × 時間 で回数が出ます。","440 × 240 s = 105,600. Frequency × time gives the count."] },
+  { id:"phone", c:"life", a:4.5e22, u:["個（電子）","electrons"],
+    q:["スマホを 2 A で1時間充電するとき、ケーブルを流れる電子は何個？","Charging a phone at 2 A for one hour — how many electrons flow through the cable?"],
+    s:[[2,"2 A = 毎秒 2 C","2 A = 2 coulombs per second"],[3600,"1時間 = 3600秒","1 hour = 3600 s"],[1.6e-19,"電気素量 1.6×10⁻¹⁹ C で割る","Divide by the elementary charge, 1.6×10⁻¹⁹ C","/"]],
+    n:["電荷 7200 C ÷ 1.602×10⁻¹⁹ C ≈ 4.5×10²² 個。","7200 C ÷ 1.602×10⁻¹⁹ C ≈ 4.5×10²² electrons."] },
+  { id:"year", c:"life", a:3.156e7, u:["秒","seconds"],
+    q:["1年は何秒？","How many seconds are in a year?"],
+    s:[[365,"365日","365 days"],[24,"1日 = 24時間","24 hours per day"],[3600,"1時間 = 3600秒","3600 s per hour"]],
+    n:["365.25日 × 86400 s ≈ 3.16×10⁷ 秒。「1年 ≈ π×10⁷ 秒」は物理屋の定番の覚え方。","365.25 days × 86400 s ≈ 3.16×10⁷ s — physicists remember it as “a year ≈ π×10⁷ s”."] },
+
+  /* ---------- 人体 / Human body ---------- */
+  { id:"protons", c:"body", a:2.3e28, u:["個","protons"],
+    q:["体重 70 kg の人の体の中に、陽子は何個ある？","How many protons are in the body of a 70 kg person?"],
+    s:[[70,"体重 70 kg","Body mass 70 kg"],[6.0e26,"1 kg あたりの核子数 ≈ 6×10²⁶（1 ÷ 1.66×10⁻²⁷ kg）","Nucleons per kg ≈ 6×10²⁶ (1 ÷ 1.66×10⁻²⁷ kg)"],[0.55,"核子のうち陽子の割合 ≈ 0.55（水素が多いので半分より少し多い）","Fraction of nucleons that are protons ≈ 0.55 (hydrogen pushes it above ½)"]],
+    n:["体の質量の約10%が水素（陽子1個のみ）、残りは O・C・N など陽子と中性子がほぼ半々。70 kg × (0.10 + 0.90×0.5) ÷ 1.66×10⁻²⁷ kg ≈ 2.3×10²⁸。","About 10% of body mass is hydrogen (a lone proton); the rest is mostly O, C, N with Z/A ≈ ½. 70 kg × (0.10 + 0.90×0.5) ÷ 1.66×10⁻²⁷ kg ≈ 2.3×10²⁸."] },
+  { id:"heart", c:"body", a:2.9e9, u:["回","beats"],
+    q:["人の一生（80年）で心臓は何回拍動する？","How many times does a human heart beat in an 80-year lifetime?"],
+    s:[[70,"安静時の心拍 ≈ 70回/分","Resting heart rate ≈ 70 per minute"],[1440,"1日 = 1440分","1440 minutes per day"],[365,"1年 = 365日","365 days per year"],[80,"80年","80 years"]],
+    n:["70 × 1440 × 365 × 80 ≈ 2.9×10⁹ 回。「一生で約30億回」とよく言われます。","70 × 1440 × 365 × 80 ≈ 2.9×10⁹ — the often-quoted “about 3 billion heartbeats”."] },
+  { id:"hair", c:"body", a:1e5, u:["本","hairs"],
+    q:["人の頭に髪の毛は何本生えている？","How many hairs are on a human head?"],
+    s:[[6.3,"頭皮を半球とみなす：面積 = 2πr²（2π ≈ 6.3）","Treat the scalp as a hemisphere: area = 2πr² (2π ≈ 6.3)"],[100,"r ≈ 10 cm → r² = 100 cm²","r ≈ 10 cm → r² = 100 cm²"],[150,"毛髪密度 ≈ 150本/cm²","Hair density ≈ 150 per cm²"]],
+    n:["一般に約10万本（髪の色などで約9万〜15万本）とされます。","Usually quoted as about 100,000 (roughly 90,000–150,000 depending on hair colour)."] },
+  { id:"cells", c:"body", a:3e13, u:["個","cells"],
+    q:["体重 70 kg の人の体を作る（ヒトの）細胞は何個？","How many human cells make up a 70 kg person?"],
+    s:[[70,"体重 70 kg","Body mass 70 kg"],[0.6,"細胞の中身が占める質量 ≈ 6割（残りは細胞外の液体や骨など）","≈60% of body mass is inside cells (the rest is extracellular fluid, bone mineral…)"],[1e-12,"典型的な細胞1個 ≈ 1 ng（10 µm 角の水）で割る","Divide by a typical cell ≈ 1 ng (a 10 µm cube of water)","/"]],
+    n:["Sender, Fuchs & Milo (2016) の推定で約3×10¹³個。数の約84%は小さな赤血球です。","Sender, Fuchs & Milo (2016) estimate ≈3×10¹³ cells; about 84% of them (by number) are small red blood cells."] },
+  { id:"power", c:"body", a:97, u:["W（ワット）","W (watts)"],
+    q:["1日 2000 kcal を食べる人の平均消費電力は何ワット？","Someone eats 2000 kcal a day. What is their average power output in watts?"],
+    s:[[2000,"1日 2000 kcal","2000 kcal per day"],[4184,"1 kcal = 4184 J","1 kcal = 4184 J"],[86400,"1日 = 86400秒で割る","Divide by 86400 s per day","/"]],
+    n:["8.4×10⁶ J ÷ 86400 s ≈ 97 W。人間はだいたい「100 W の電球」です。","8.4×10⁶ J ÷ 86400 s ≈ 97 W — a person is roughly a 100 W light bulb."] },
+  { id:"blood", c:"body", a:7e3, u:["L（リットル）","litres"],
+    q:["心臓が1日に送り出す血液は何リットル？","How many litres of blood does the heart pump in one day?"],
+    s:[[0.07,"1回の拍出量 ≈ 70 mL = 0.07 L","Stroke volume ≈ 70 mL = 0.07 L"],[70,"70回/分","70 beats per minute"],[1440,"1日 = 1440分","1440 minutes per day"]],
+    n:["安静時の心拍出量は約5 L/分 → 1日で約7,000 L。","Resting cardiac output is about 5 L/min → roughly 7,000 L per day."] },
+  { id:"breath", c:"body", a:1.1e4, u:["L（リットル）","litres"],
+    q:["人は1日に何リットルの空気を吸う？","How many litres of air does a person breathe in per day?"],
+    s:[[0.5,"1回の呼吸 ≈ 0.5 L","≈0.5 L per breath"],[15,"15回/分","15 breaths per minute"],[1440,"1日 = 1440分","1440 minutes per day"]],
+    n:["1回換気量 約0.5 L × 12〜20回/分。よく「1日 約1万L（1万1000 L）」と紹介されます。","Tidal volume ≈0.5 L at 12–20 breaths/min; commonly quoted as about 10,000–11,000 L per day."] },
+
+  /* ---------- 物理 / Physics ---------- */
+  { id:"pcross", c:"phys", a:5.6e-24, u:["秒","seconds"],
+    q:["光が陽子1個を横切るのにかかる時間は？","How long does light take to cross a proton?"],
+    s:[[0.84e-15,"陽子の電荷半径 ≈ 0.84 fm","Proton charge radius ≈ 0.84 fm"],[2,"直径 = 2 × 半径","Diameter = 2 × radius"],[3e8,"光速 3×10⁸ m/s で割る","Divide by c = 3×10⁸ m/s","/"]],
+    n:["1.68×10⁻¹⁵ m ÷ 3.0×10⁸ m/s ≈ 5.6×10⁻²⁴ 秒。強い相互作用の典型的な時間スケールです。","1.68×10⁻¹⁵ m ÷ 3.0×10⁸ m/s ≈ 5.6×10⁻²⁴ s — the typical time scale of the strong interaction."] },
+  { id:"lgad", c:"phys", a:9, u:["mm","mm"],
+    q:["AC-LGAD 検出器の時間分解能（約30ピコ秒）の間に、光は何 mm 進む？","How far (in mm) does light travel during 30 ps, the time resolution of an AC-LGAD detector?"],
+    s:[[3e8,"光速 3×10⁸ m/s","c = 3×10⁸ m/s"],[3e-11,"30 ps = 3×10⁻¹¹ s","30 ps = 3×10⁻¹¹ s"],[1000,"1 m = 1000 mm","1 m = 1000 mm"]],
+    n:["光は 1 ns で約30 cm、1 ps で約0.3 mm。ピコ秒の時間測定（TOF）で粒子の速さの違いを見分けます。","Light covers ≈30 cm per ns and ≈0.3 mm per ps; picosecond timing (time of flight) tells particles apart by speed."] },
+  { id:"lhcE", c:"phys", a:3.6e8, u:["J（ジュール）","J (joules)"],
+    q:["LHC の陽子ビーム1本に蓄えられたエネルギーは何ジュール？（設計値）","How much energy is stored in one LHC proton beam (design values), in joules?"],
+    s:[[2808,"バンチ数 2808","2808 bunches"],[1.15e11,"1バンチあたり陽子 1.15×10¹¹ 個","1.15×10¹¹ protons per bunch"],[7e12,"陽子1個 7 TeV = 7×10¹² eV","7 TeV = 7×10¹² eV per proton"],[1.6e-19,"1 eV = 1.6×10⁻¹⁹ J","1 eV = 1.6×10⁻¹⁹ J"]],
+    n:["LHC 設計値で1ビーム約362 MJ。TNT火薬 約86 kg分、あるいは20トンの物体が時速約700 kmで飛ぶ運動エネルギーに相当します。","Design value ≈362 MJ per beam — about 86 kg of TNT, or the kinetic energy of a 20-tonne object flying at ≈700 km/h."] },
+  { id:"lhcN", c:"phys", a:1e9, u:["回/秒","collisions per second"],
+    q:["LHC では毎秒何回の陽子–陽子衝突が起きる？（設計値）","How many proton–proton collisions per second happen at the LHC (design)?"],
+    s:[[2808,"バンチ数 2808","2808 bunches"],[11245,"周回周波数 11,245 Hz（27 km を光速で）","Revolution frequency 11,245 Hz (27 km at ≈c)"],[25,"1回のバンチ交差で平均 ≈ 25 回衝突","≈25 collisions per bunch crossing (pile-up)"]],
+    n:["2808 × 11245 × 25 ≈ 8×10⁸。CERN は「毎秒最大約10億回」と紹介しています。","2808 × 11245 × 25 ≈ 8×10⁸; CERN describes it as “up to about 1 billion collisions per second”."] },
+  { id:"laser", c:"phys", a:3.3e15, u:["個/秒","photons per second"],
+    q:["1 mW の赤色レーザーポインター（650 nm）は毎秒何個の光子を出す？","How many photons per second does a 1 mW red laser pointer (650 nm) emit?"],
+    s:[[1e-3,"出力 1 mW = 10⁻³ J/s","Power 1 mW = 10⁻³ J/s"],[6.5e-7,"波長 650 nm = 6.5×10⁻⁷ m を掛ける","Multiply by the wavelength 650 nm = 6.5×10⁻⁷ m"],[2.0e-25,"hc = 2.0×10⁻²⁵ J·m で割る（光子1個 E = hc/λ）","Divide by hc = 2.0×10⁻²⁵ J·m (photon energy E = hc/λ)","/"]],
+    n:["光子1個は hc/λ ≈ 3.1×10⁻¹⁹ J（約1.9 eV）。10⁻³ J/s ÷ 3.1×10⁻¹⁹ J ≈ 3.3×10¹⁵ 個/秒。","Each photon carries hc/λ ≈ 3.1×10⁻¹⁹ J (≈1.9 eV): 10⁻³ J/s ÷ 3.1×10⁻¹⁹ J ≈ 3.3×10¹⁵ per second."] },
+  { id:"nucdens", c:"phys", a:2.3e14, u:["倍","times"],
+    q:["原子核の密度は水の何倍？","How many times denser than water is nuclear matter?"],
+    s:[[1.67e-27,"核子1個の質量 1.67×10⁻²⁷ kg","Nucleon mass 1.67×10⁻²⁷ kg"],[7.2e-45,"核子1個分の体積 (4/3)π(1.2 fm)³ ≈ 7.2×10⁻⁴⁵ m³ で割る","Divide by the volume per nucleon (4/3)π(1.2 fm)³ ≈ 7.2×10⁻⁴⁵ m³","/"],[1000,"水の密度 1000 kg/m³ で割る","Divide by water's density, 1000 kg/m³","/"]],
+    n:["原子核の半径 R ≈ 1.2 fm × A^(1/3) から、核物質の密度 ≈ 2.3×10¹⁷ kg/m³。角砂糖1個分で約2億トン！","From R ≈ 1.2 fm × A^(1/3), nuclear matter has ≈2.3×10¹⁷ kg/m³ — a sugar cube of it would weigh ~200 million tonnes."] },
+  { id:"atomscale", c:"phys", a:630, u:["m","m"],
+    q:["陽子を直径1 cmのビー玉に拡大すると、水素原子全体の直径は何メートル？","If a proton were blown up to a 1 cm marble, how wide (in metres) would the whole hydrogen atom be?"],
+    s:[[1.06e-10,"水素原子の直径 ≈ 2 × ボーア半径 = 1.06×10⁻¹⁰ m","Hydrogen atom diameter ≈ 2 × Bohr radius = 1.06×10⁻¹⁰ m"],[1.68e-15,"陽子の直径 1.68 fm で割る → 約6万倍","Divide by the proton diameter 1.68 fm → ratio ≈ 63,000","/"],[0.01,"ビー玉 1 cm = 0.01 m を掛ける","Multiply by the 1 cm (0.01 m) marble"]],
+    n:["原子と原子核の大きさの比は約6万倍。ビー玉の原子核なら、電子の雲は直径600 m 以上にも広がります。原子はほぼ空っぽ！","Atom/nucleus size ratio ≈ 63,000: with a marble nucleus, the electron cloud spans over 600 m. Atoms are mostly empty!"] },
+
+  /* ---------- 地球・宇宙 / Earth & space ---------- */
+  { id:"atmos", c:"space", a:5.1e18, u:["kg","kg"],
+    q:["地球の大気全体の質量は何 kg？","What is the total mass of Earth's atmosphere, in kg?"],
+    s:[[5.1e14,"地球の表面積 4πR² ≈ 5.1×10¹⁴ m²（R = 6400 km）","Earth's surface area 4πR² ≈ 5.1×10¹⁴ m² (R = 6400 km)"],[1e5,"大気圧 ≈ 10⁵ Pa（= 10⁵ N/m²）","Air pressure ≈ 10⁵ Pa (= 10⁵ N/m²)"],[9.8,"重力加速度 9.8 m/s² で割る（重さ → 質量）","Divide by g = 9.8 m/s² (weight → mass)","/"]],
+    n:["大気圧は空気の重さそのもの。精密な値は約5.1×10¹⁸ kg（Trenberth & Smith 2005）。","Air pressure is just the weight of the air above. The accurate value is ≈5.1×10¹⁸ kg (Trenberth & Smith 2005)."] },
+  { id:"neptune", c:"space", a:4.2, u:["時間","hours"],
+    q:["太陽の光が海王星（約30 au）に届くまで何時間？","How many hours does sunlight take to reach Neptune (about 30 au)?"],
+    s:[[30,"太陽–海王星 ≈ 30 au","Sun–Neptune ≈ 30 au"],[1.5e11,"1 au = 1.5×10¹¹ m","1 au = 1.5×10¹¹ m"],[3e8,"光速 3×10⁸ m/s で割る","Divide by c = 3×10⁸ m/s","/"],[3600,"1時間 = 3600秒で割る","Divide by 3600 s per hour","/"]],
+    n:["地球までは 499 秒（約8分19秒）。海王星（30.07 au）までは約1万5000秒 ≈ 4.2時間。","To Earth it's 499 s (8 min 19 s); to Neptune (30.07 au) about 15,000 s ≈ 4.2 h."] },
+  { id:"earthatoms", c:"space", a:1.3e50, u:["個（原子）","atoms"],
+    q:["地球は全部で何個の原子でできている？","How many atoms make up the whole Earth?"],
+    s:[[6e24,"地球の質量 6×10²⁴ kg","Earth's mass 6×10²⁴ kg"],[1000,"1 kg = 1000 g","1 kg = 1000 g"],[27,"平均原子量 ≈ 27 g/mol（Fe・O・Si・Mg の混合）で割る","Divide by the mean atomic mass ≈27 g/mol (a mix of Fe, O, Si, Mg)","/"],[6e23,"アボガドロ数を掛ける","Multiply by Avogadro's number"]],
+    n:["地球の組成（Fe 32%, O 30%, Si 15%, Mg 14% …）から平均原子量は約27 g/mol。5.97×10²⁴ kg で約1.3×10⁵⁰ 個。","Earth's bulk composition (Fe 32%, O 30%, Si 15%, Mg 14%…) gives ≈27 g/mol on average; with 5.97×10²⁴ kg that's ≈1.3×10⁵⁰ atoms."] },
+  { id:"sunearths", c:"space", a:1.3e6, u:["個","Earths"],
+    q:["太陽の体積は地球の何個分？","How many Earths would fit inside the Sun (by volume)?"],
+    s:[[109,"太陽の半径は地球の約109倍","The Sun's radius is ≈109 Earth radii"],[109,"体積は半径の3乗：もう一度 ×109","Volume goes as radius cubed: ×109 again"],[109,"さらに ×109","…and ×109 once more"]],
+    n:["(696,000 km ÷ 6371 km)³ = 109.2³ ≈ 1.3×10⁶ 個。","(696,000 km ÷ 6371 km)³ = 109.2³ ≈ 1.3×10⁶."] },
+  { id:"nu", c:"space", a:6.5e10, u:["個/秒","per second"],
+    q:["太陽ニュートリノは、あなたの親指の爪（約1 cm²）を毎秒何個通り抜ける？","How many solar neutrinos pass through your thumbnail (≈1 cm²) every second?"],
+    s:[[3.8e26,"太陽の光度 3.8×10²⁶ W","Solar luminosity 3.8×10²⁶ W"],[2.1e-12,"ニュートリノ1個あたり ≈ 13 MeV = 2.1×10⁻¹² J で割る（核融合1回 26.7 MeV で2個）","Divide by ≈13 MeV = 2.1×10⁻¹² J per neutrino (each 26.7 MeV fusion chain makes 2)","/"],[2.8e27,"半径 1 au の球の面積 4π(1.5×10¹³ cm)² ≈ 2.8×10²⁷ cm² で割る","Divide by the area of a 1 au sphere, 4π(1.5×10¹³ cm)² ≈ 2.8×10²⁷ cm²","/"],[1,"爪の面積 ≈ 1 cm²","Thumbnail ≈ 1 cm²"]],
+    n:["標準太陽模型による地球での太陽ニュートリノ総フラックスは約6.5×10¹⁰ 個/cm²/秒（大半は pp ニュートリノ）。","The Standard Solar Model total flux at Earth is ≈6.5×10¹⁰ per cm² per second, mostly pp neutrinos."] },
+  { id:"age", c:"space", a:4.35e17, u:["秒","seconds"],
+    q:["宇宙の年齢（138億年）は何秒？","How many seconds old is the Universe (13.8 billion years)?"],
+    s:[[1.38e10,"宇宙年齢 1.38×10¹⁰ 年","Age 1.38×10¹⁰ years"],[365,"1年 = 365日","365 days per year"],[86400,"1日 = 86400秒","86400 s per day"]],
+    n:["1.38×10¹⁰ 年 × 3.156×10⁷ 秒/年 ≈ 4.35×10¹⁷ 秒（Planck 2018: 137.9億年）。","1.38×10¹⁰ yr × 3.156×10⁷ s/yr ≈ 4.35×10¹⁷ s (Planck 2018: 13.79 Gyr)."] },
+  { id:"orbitv", c:"space", a:29.8, u:["km/s","km/s"],
+    q:["地球が太陽のまわりを回る速さは秒速何 km？","How fast does Earth orbit the Sun, in km/s?"],
+    s:[[6.28,"円周 = 2π × 半径（2π ≈ 6.28）","Circumference = 2π × radius (2π ≈ 6.28)"],[1.5e8,"軌道半径 1.5×10⁸ km","Orbit radius 1.5×10⁸ km"],[3.16e7,"1年 = 3.16×10⁷ 秒で割る","Divide by one year = 3.16×10⁷ s","/"]],
+    n:["9.4×10⁸ km ÷ 3.16×10⁷ s ≈ 29.8 km/s（時速 約10万7000 km）。","9.4×10⁸ km ÷ 3.16×10⁷ s ≈ 29.8 km/s (about 107,000 km/h)."] },
+  { id:"ocean", c:"space", a:1.33e18, u:["m³","m³"],
+    q:["地球の海水の総体積は何 m³？","What is the total volume of Earth's oceans, in m³?"],
+    s:[[5.1e14,"地球の表面積 5.1×10¹⁴ m²","Earth's surface area 5.1×10¹⁴ m²"],[0.71,"海の割合 ≈ 71%","Oceans cover ≈71%"],[3700,"平均水深 ≈ 3.7 km","Mean depth ≈ 3.7 km"]],
+    n:["NOAA などの推定で約1.33×10⁹ km³ = 1.33×10¹⁸ m³。","NOAA and others estimate ≈1.33×10⁹ km³ = 1.33×10¹⁸ m³."] },
+  { id:"sunmass", c:"space", a:1.99e30, u:["kg","kg"],
+    q:["太陽の質量は何 kg？","What is the mass of the Sun, in kg?"],
+    s:[[3.4e26,"太陽半径 7×10⁸ m の3乗 ≈ 3.4×10²⁶ m³","Solar radius cubed: (7×10⁸ m)³ ≈ 3.4×10²⁶ m³"],[4.2,"球の体積 4π/3 ≈ 4.2 を掛ける","Multiply by 4π/3 ≈ 4.2 for a sphere"],[1400,"平均密度 1.4 g/cm³ = 1400 kg/m³（水の1.4倍）","Mean density 1.4 g/cm³ = 1400 kg/m³ (1.4× water)"]],
+    n:["ケプラーの第3法則 M = 4π²a³/(GT²) からも 1.99×10³⁰ kg（地球の約33万倍）。","Kepler's third law, M = 4π²a³/(GT²), also gives 1.99×10³⁰ kg (≈333,000 Earths)."] },
+  { id:"iss", c:"space", a:5.56e3, u:["秒","seconds"],
+    q:["国際宇宙ステーション（高度 約400 km）が地球を1周するのに何秒？","How many seconds does the ISS (≈400 km up) take to orbit Earth once?"],
+    s:[[6.28,"2π","2π"],[6.8e6,"軌道半径 6400 + 400 km ≈ 6.8×10⁶ m","Orbit radius 6400 + 400 km ≈ 6.8×10⁶ m"],[7700,"速さ 7.7 km/s で割る","Divide by the speed, 7.7 km/s","/"]],
+    n:["約92〜93分 ≈ 5560 秒。1日に約15.5周します。","About 92–93 minutes ≈ 5560 s — roughly 15.5 orbits a day."] },
+  { id:"solarpow", c:"space", a:1.74e17, u:["W","W"],
+    q:["地球が太陽から受け取っている全パワーは何ワット？","How much total solar power does Earth intercept, in watts?"],
+    s:[[1360,"太陽定数 ≈ 1360 W/m²","Solar constant ≈ 1360 W/m²"],[3.14,"地球の断面積 = πR²：π","Earth's cross-section is πR²: π"],[4.1e13,"R² = (6.4×10⁶ m)² ≈ 4.1×10¹³ m²","R² = (6.4×10⁶ m)² ≈ 4.1×10¹³ m²"]],
+    n:["1361 W/m² × π(6.371×10⁶ m)² ≈ 1.74×10¹⁷ W。人類の総エネルギー消費（約2×10¹³ W）の約1万倍。","1361 W/m² × π(6.371×10⁶ m)² ≈ 1.74×10¹⁷ W — about 10,000× humanity's total energy use (≈2×10¹³ W)."] }
+];
+/*END_QUESTIONS*/
+
+(function () {
+  "use strict";
+  var $ = function (id) { return document.getElementById(id); };
+  function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+
+  /* ---- language & theme ---- */
+  var lang = lsGet("lang");
+  if (lang !== "ja" && lang !== "en") lang = ((navigator.language || "").toLowerCase().indexOf("ja") === 0) ? "ja" : "en";
+  var T = function (ja, en) { return lang === "ja" ? ja : en; };
+  var L = function (pair) { return lang === "ja" ? pair[0] : pair[1]; };
+  function applyLang(l, save) {
+    lang = l; document.body.setAttribute("data-l", l); document.documentElement.lang = l;
+    if (save) lsSet("lang", l);
+    rerender();
+  }
+  function applyTheme(t) { document.body.setAttribute("data-t", t === "light" ? "light" : "dark"); if (state === "reveal") drawLine(); }
+  window.addEventListener("resize", function () { if (state === "reveal") drawLine(); });
+  window.addEventListener("storage", function (e) {
+    if (e.key === "lang" && (e.newValue === "ja" || e.newValue === "en")) applyLang(e.newValue, false);
+    if (e.key === "theme" && e.newValue) applyTheme(e.newValue);
+  });
+  $("langBtn").addEventListener("click", function () { applyLang(lang === "ja" ? "en" : "ja", true); });
+  $("helpBtn").addEventListener("click", function () { $("help").classList.remove("hidden"); });
+  $("helpClose").addEventListener("click", function () { $("help").classList.add("hidden"); });
+  $("help").addEventListener("click", function (e) { if (e.target === $("help")) $("help").classList.add("hidden"); });
+
+  /* ---- categories ---- */
+  var CATS = [
+    { id:"all", ja:"すべて", en:"All" },
+    { id:"life", ja:"日常", en:"Everyday" },
+    { id:"body", ja:"人体", en:"Body" },
+    { id:"phys", ja:"物理", en:"Physics" },
+    { id:"space", ja:"地球・宇宙", en:"Earth & Space" }
+  ];
+  function catName(id) { for (var i = 0; i < CATS.length; i++) if (CATS[i].id === id) return T(CATS[i].ja, CATS[i].en); return id; }
+  var cat = lsGet("fermi.cat") || "all";
+  if (!CATS.some(function (c) { return c.id === cat; })) cat = "all";
+
+  /* ---- number formatting ---- */
+  var SUP = { "-": "⁻", "0": "⁰", "1": "¹", "2": "²", "3": "³", "4": "⁴", "5": "⁵", "6": "⁶", "7": "⁷", "8": "⁸", "9": "⁹" };
+  function split(x) { var e = Math.floor(Math.log10(x)); var m = x / Math.pow(10, e); if (m >= 9.995) { m = 1; e++; } return { m: m, e: e }; }
+  function trimNum(s) { return s.indexOf(".") >= 0 ? s.replace(/0+$/, "").replace(/\.$/, "") : s; }
+  function fmtH(x, sig) {
+    sig = sig || 3;
+    if (!(x > 0)) return "—";
+    if (x >= 1e-2 && x < 1e6) {
+      var s = Number(x.toPrecision(sig));
+      return s.toLocaleString(lang === "ja" ? "ja-JP" : "en-US", { maximumFractionDigits: 4 });
+    }
+    var p = split(x);
+    return trimNum(p.m.toFixed(sig - 1)) + " × 10<sup>" + p.e + "</sup>";
+  }
+  function fmtT(x) { // plain-text version for svg
+    if (x >= 1e-2 && x < 1e6) return String(Number(x.toPrecision(3)));
+    var p = split(x);
+    return trimNum(p.m.toFixed(2)) + "×10" + String(p.e).split("").map(function (c) { return SUP[c]; }).join("");
+  }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+
+  /* ---- parse typed input ---- */
+  function parseGuess(str) {
+    if (!str) return NaN;
+    var SM = { "⁰":"0","¹":"1","²":"2","³":"3","⁴":"4","⁵":"5","⁶":"6","⁷":"7","⁸":"8","⁹":"9","⁻":"-" };
+    var s = String(str).replace(/[０-９．＋－ｅＥ＾（）＊]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) - 0xFEE0); })
+      .replace(/[−–—]/g, "-").replace(/[,\s，、_]/g, "").toLowerCase()
+      .replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹⁻]+/g, function (g) { return "^" + g.split("").map(function (c) { return SM[c]; }).join(""); })
+      .replace(/\*\*/g, "^");
+    var m = s.match(/^(\d*\.?\d+)?[×x*・]?10\^\(?([-+]?\d+)\)?$/);
+    if (m) return (m[1] ? parseFloat(m[1]) : 1) * Math.pow(10, parseInt(m[2], 10));
+    if (/^\d*\.?\d+(e[-+]?\d+)?$/.test(s)) return parseFloat(s);
+    return NaN;
+  }
+
+  /* ---- scoring ---- */
+  function scoreOf(e) { return Math.max(0, Math.round(100 * (1 - e / 3))); }
+  function badgeOf(e) {
+    if (e <= Math.log10(2) + 1e-9) return { cls: "b2", ja: "2倍以内！", en: "Within ×2!" };
+    if (e <= 1 + 1e-9) return { cls: "b10", ja: "10倍以内", en: "Within ×10" };
+    if (e <= 2 + 1e-9) return { cls: "b100", ja: "100倍以内", en: "Within ×100" };
+    return { cls: "bx", ja: "100倍以上ずれ", en: "Off by >100×" };
+  }
+  function stepProduct(q) { var p = 1; q.s.forEach(function (st) { p = st[3] === "/" ? p / st[0] : p * st[0]; }); return p; }
+
+  /* ---- game state ---- */
+  var state = "intro", round = [], qi = 0, total = 0, results = [];
+  var gm = 1, ge = 0; // guess mantissa/exponent
+  var ROUND = 10;
+
+  function bestKey() { return "fermi.best." + cat; }
+  function getBest() { var b = parseInt(lsGet(bestKey()), 10); return isNaN(b) ? null : b; }
+  function pool() { return QUESTIONS.filter(function (q) { return cat === "all" || q.c === cat; }); }
+
+  function renderCats() {
+    var box = $("cats"); box.innerHTML = "";
+    CATS.forEach(function (c) {
+      var n = c.id === "all" ? QUESTIONS.length : QUESTIONS.filter(function (q) { return q.c === c.id; }).length;
+      var b = document.createElement("button"); b.type = "button"; b.className = "chip" + (c.id === cat ? " on" : "");
+      b.innerHTML = esc(T(c.ja, c.en)) + ' <span class="mono" style="opacity:.7">' + n + "</span>";
+      b.addEventListener("click", function () { cat = c.id; lsSet("fermi.cat", cat); renderCats(); renderBestIntro(); });
+      box.appendChild(b);
+    });
+  }
+  function renderBestIntro() {
+    var b = getBest(), n = Math.min(ROUND, pool().length);
+    $("bestIntro").innerHTML = esc(T(n + "問 · 満点 " + n * 100 + " 点", n + " questions · max " + n * 100)) + (b !== null ? " · " + esc(T("ベスト ", "Best ")) + b : "");
+  }
+  function setStatus() {
+    if (state === "intro") $("status").textContent = T(QUESTIONS.length + "問収録", QUESTIONS.length + " questions");
+    else if (state === "end") $("status").textContent = T("結果 ", "Result ") + total;
+    else $("status").textContent = "Q" + (qi + 1) + "/" + round.length + " · " + total + T("点", " pts");
+  }
+
+  function shuffle(a) { for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+  function startGame() {
+    round = shuffle(pool().slice()).slice(0, ROUND); qi = 0; total = 0; results = [];
+    $("intro").classList.add("hidden"); $("end").classList.add("hidden"); $("quiz").classList.remove("hidden");
+    showQuestion();
+  }
+  function showQuestion() {
+    state = "ask";
+    gm = 1; ge = 0; syncInputs();
+    $("typed").value = ""; $("typedErr").textContent = "";
+    $("inputArea").classList.remove("hidden"); $("reveal").classList.add("hidden");
+    renderQuestion(); setStatus();
+    document.querySelector("main").scrollTop = 0;
+  }
+  function renderQuestion() {
+    var q = round[qi]; if (!q) return;
+    $("qcat").textContent = catName(q.c);
+    $("qnum").textContent = (qi + 1) + " / " + round.length;
+    $("qtext").textContent = L(q.q);
+    $("qunit").textContent = T("単位：", "Unit: ") + L(q.u);
+    $("estUnit").textContent = L(q.u);
+  }
+  function guessVal() { return gm * Math.pow(10, ge); }
+  function syncInputs(skipNum) {
+    $("mRange").value = Math.min(9.9, Math.max(1, gm));
+    if (!skipNum) $("mNum").value = trimNum(gm.toFixed(2));
+    $("eRange").value = ge; $("eVal").textContent = ge;
+    $("estVal").innerHTML = trimNum(gm.toFixed(2)) + (gm === Math.round(gm) ? ".0" : "") + " × 10<sup>" + ge + "</sup>";
+  }
+  function setGuess(v) {
+    var p = split(v); gm = Math.round(p.m * 100) / 100; ge = p.e;
+    if (gm >= 10) { gm = 1; ge++; }
+    ge = Math.max(-30, Math.min(55, ge)); syncInputs();
+  }
+  $("mRange").addEventListener("input", function () { gm = parseFloat(this.value); syncInputs(); });
+  $("mNum").addEventListener("input", function () {
+    var v = parseFloat(this.value);
+    if (v >= 1 && v < 10) { gm = Math.round(v * 100) / 100; syncInputs(true); }
+  });
+  $("mNum").addEventListener("change", function () {
+    var v = parseFloat(this.value);
+    if (v > 0 && isFinite(v)) setGuess(v * Math.pow(10, ge)); else syncInputs();
+  });
+  $("eRange").addEventListener("input", function () { ge = parseInt(this.value, 10); syncInputs(); });
+  function bumpE(d) { ge = Math.max(-30, Math.min(55, ge + d)); syncInputs(); }
+  $("eMinus").addEventListener("click", function () { bumpE(-1); });
+  $("ePlus").addEventListener("click", function () { bumpE(1); });
+  function applyTyped() {
+    var v = parseGuess($("typed").value);
+    if (!(v > 0) || !isFinite(v)) { $("typedErr").textContent = T("正の数を入力してください（例: 3e8, 2.5×10^-24）", "Enter a positive number (e.g. 3e8, 2.5×10^-24)"); return false; }
+    if (v < 1e-30 || v >= 1e56) { $("typedErr").textContent = T("範囲外です（10⁻³⁰〜10⁵⁵）", "Out of range (10⁻³⁰ – 10⁵⁵)"); return false; }
+    $("typedErr").textContent = ""; setGuess(v); return true;
+  }
+  $("typedBtn").addEventListener("click", applyTyped);
+  $("typed").addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); e.stopPropagation(); if (applyTyped()) submit(); } });
+  $("typed").addEventListener("input", function () { var v = parseGuess(this.value); if (v > 0 && isFinite(v) && v >= 1e-30 && v < 1e56) { $("typedErr").textContent = ""; setGuess(v); } });
+
+  function submit() {
+    if (state !== "ask") return;
+    var q = round[qi], g = guessVal();
+    var e = Math.abs(Math.log10(g / q.a)), pts = scoreOf(e);
+    total += pts;
+    results.push({ q: q, g: g, e: e, pts: pts });
+    state = "reveal";
+    $("inputArea").classList.add("hidden"); $("reveal").classList.remove("hidden");
+    renderReveal(); setStatus();
+    var pv = $("ptsVal"); pv.classList.remove("pop"); void pv.offsetWidth; pv.classList.add("pop");
+    $("nextBtn").focus({ preventScroll: true });
+  }
+  $("submitBtn").addEventListener("click", submit);
+
+  function renderReveal() {
+    var r = results[results.length - 1]; if (!r) return;
+    var q = r.q, b = badgeOf(r.e);
+    $("ptsVal").textContent = "+" + r.pts;
+    $("badge").className = "badge " + b.cls; $("badge").textContent = T(b.ja, b.en);
+    var ratio = r.g / q.a;
+    $("ratio").textContent = T("答えの ", "") + (ratio >= 1 ? "×" + fmtT(ratio) : "×1/" + fmtT(1 / ratio)) + T("", " of the answer") + " · e = " + r.e.toFixed(2);
+    $("youVal").innerHTML = fmtH(r.g) + " <span class='muted' style='font-weight:400;font-size:.8em'>" + esc(L(q.u)) + "</span>";
+    $("ansVal").innerHTML = fmtH(q.a) + " <span class='muted' style='font-weight:400;font-size:.8em'>" + esc(L(q.u)) + "</span>";
+    var ul = $("steps"), html = "", p = 1;
+    q.s.forEach(function (st, i) {
+      p = st[3] === "/" ? p / st[0] : p * st[0];
+      var f = (i === 0 ? "" : (st[3] === "/" ? "÷ " : "× ")) + fmtH(st[0], 3);
+      html += "<li><span class='f'>" + f + "</span><span>" + esc(lang === "ja" ? st[1] : st[2]) + "</span><span class='run'>= " + fmtH(p) + "</span></li>";
+    });
+    html += "<li class='tot'><span class='f'>≈</span><span>" + esc(T("モデルの答え", "Model estimate")) + "</span><span class='run'>" + fmtH(p) + " " + esc(L(q.u)) + "</span></li>";
+    ul.innerHTML = html;
+    $("note").innerHTML = "📎 " + esc(L(q.n));
+    $("nextBtn").innerHTML = qi + 1 < round.length ? esc(T("次の問題 →", "Next question →")) : esc(T("結果を見る", "See results"));
+    drawLine();
+  }
+
+  function drawLine() {
+    var r = results[results.length - 1]; if (!r) return;
+    var svg = $("nl"), W = Math.round(Math.max(300, Math.min(600, svg.getBoundingClientRect().width || 600))), la = Math.log10(r.q.a), lg = Math.log10(r.g);
+    var lo = Math.floor(Math.min(la, lg)) - 1, hi = Math.ceil(Math.max(la, lg)) + 1;
+    while (hi - lo < 6) { lo--; hi++; }
+    var span = hi - lo, pad = 24, X = function (v) { return pad + (v - lo) / span * (W - 2 * pad); };
+    var cs = getComputedStyle(document.body), c1 = cs.getPropertyValue("--c1").trim(), c2 = cs.getPropertyValue("--c2").trim(), mu = cs.getPropertyValue("--muted").trim(), ln = cs.getPropertyValue("--line").trim(), ok = cs.getPropertyValue("--ok").trim();
+    var y = 52, s = "";
+    s += "<rect x='" + X(Math.max(lo, la - 1)) + "' y='" + (y - 9) + "' width='" + (X(Math.min(hi, la + 1)) - X(Math.max(lo, la - 1))) + "' height='18' rx='9' fill='" + c1 + "' opacity='.14'/>";
+    s += "<rect x='" + X(la - Math.log10(2)) + "' y='" + (y - 9) + "' width='" + (X(la + Math.log10(2)) - X(la - Math.log10(2))) + "' height='18' rx='6' fill='" + ok + "' opacity='.28'/>";
+    s += "<line x1='" + pad + "' x2='" + (W - pad) + "' y1='" + y + "' y2='" + y + "' stroke='" + mu + "' stroke-width='1.5'/>";
+    var maxTicks = W < 420 ? 7 : 12, step = span <= maxTicks ? 1 : span <= maxTicks * 2 ? 2 : 5;
+    for (var k = Math.ceil(lo / step) * step; k <= hi; k += step) {
+      s += "<line x1='" + X(k) + "' x2='" + X(k) + "' y1='" + (y - 5) + "' y2='" + (y + 5) + "' stroke='" + mu + "'/>";
+      s += "<text x='" + X(k) + "' y='" + (y + 22) + "' fill='" + mu + "' font-size='12' text-anchor='middle' font-family='ui-monospace,monospace'>10" + String(k).split("").map(function (c) { return SUP[c]; }).join("") + "</text>";
+    }
+    for (var m = lo; m < hi; m++) for (var d = 2; d <= 9; d++) { var xv = X(m + Math.log10(d)); s += "<line x1='" + xv + "' x2='" + xv + "' y1='" + (y - 2.5) + "' y2='" + (y + 2.5) + "' stroke='" + ln + "'/>"; }
+    var xa = X(la), xg = X(lg), close = Math.abs(xa - xg) < 70;
+    function anchor(x) { return x < 70 ? "start" : x > W - 70 ? "end" : "middle"; }
+    s += "<path d='M" + xa + "," + (y - 3) + " l-7,-12 h14 z' fill='" + c1 + "'/>";
+    s += "<text x='" + xa + "' y='" + (y - 20) + "' fill='" + c1 + "' font-size='13' font-weight='700' text-anchor='" + anchor(xa) + "'>" + esc(T("答え ", "answer ")) + esc(fmtT(r.q.a)) + "</text>";
+    s += "<circle cx='" + xg + "' cy='" + y + "' r='6.5' fill='" + c2 + "' stroke='" + cs.getPropertyValue("--bg").trim() + "' stroke-width='2'/>";
+    s += "<text x='" + xg + "' y='" + (close ? y + 40 : y - 20) + "' fill='" + c2 + "' font-size='13' font-weight='700' text-anchor='" + anchor(xg) + "'>" + esc(T("あなた ", "you ")) + esc(fmtT(r.g)) + "</text>";
+    svg.setAttribute("viewBox", "0 0 " + W + " " + (close ? 104 : 86));
+    svg.innerHTML = s;
+  }
+
+  function next() {
+    if (state !== "reveal") return;
+    qi++;
+    if (qi < round.length) showQuestion(); else finish();
+  }
+  $("nextBtn").addEventListener("click", next);
+
+  function rankOf(frac) {
+    if (frac >= 0.9) return T("🏆 フェルミの再来", "🏆 Fermi reincarnated");
+    if (frac >= 0.75) return T("🎯 桁の職人", "🎯 Order-of-magnitude artisan");
+    if (frac >= 0.6) return T("🔭 見積もり上手", "🔭 Sharp estimator");
+    if (frac >= 0.45) return T("🧪 見習い物理屋", "🧪 Apprentice physicist");
+    if (frac >= 0.3) return T("🧭 桁の旅人", "🧭 Wanderer of the digits");
+    return T("🌱 まずは10倍以内を目指そう", "🌱 Aim for within ×10 first");
+  }
+  var lastBest = null, newBest = false;
+  function finish() {
+    state = "end";
+    lastBest = getBest(); newBest = false;
+    if (lastBest === null || total > lastBest) { lsSet(bestKey(), String(total)); newBest = true; }
+    $("quiz").classList.add("hidden"); $("end").classList.remove("hidden");
+    renderEnd(); setStatus();
+    document.querySelector("main").scrollTop = 0;
+  }
+  function renderEnd() {
+    var max = round.length * 100;
+    $("totalVal").textContent = total + " / " + max;
+    $("rankVal").textContent = rankOf(total / max);
+    var b = getBest();
+    $("bestEnd").textContent = (newBest ? T("🎉 自己ベスト更新！", "🎉 New personal best!") + " " : "") + T("ベスト（" + catName(cat) + "）: ", "Best (" + catName(cat) + "): ") + (b === null ? "—" : b);
+    var h = "";
+    results.forEach(function (r, i) {
+      var bd = badgeOf(r.e);
+      h += "<li><span class='mono muted'>" + (i + 1) + "</span><span>" + esc(L(r.q.q)) + "<br><span class='muted mono' style='font-size:.8rem'>" + T("推定 ", "you ") + fmtH(r.g) + " · " + T("答え ", "ans ") + fmtH(r.q.a) + "</span></span><span class='p' style='color:var(--" + (bd.cls === "b2" ? "ok" : bd.cls === "b10" ? "c1" : bd.cls === "b100" ? "c3" : "bad") + ")'>" + r.pts + "</span></li>";
+    });
+    $("sumList").innerHTML = h;
+  }
+  $("againBtn").addEventListener("click", startGame);
+  $("menuBtn").addEventListener("click", function () { state = "intro"; $("end").classList.add("hidden"); $("intro").classList.remove("hidden"); renderCats(); renderBestIntro(); setStatus(); });
+  $("startBtn").addEventListener("click", startGame);
+
+  document.addEventListener("keydown", function (e) {
+    if (!$("help").classList.contains("hidden")) { if (e.key === "Escape" || e.key === "Enter") { e.preventDefault(); $("help").classList.add("hidden"); } return; }
+    var inText = e.target && (e.target.tagName === "INPUT" && (e.target.type === "text" || e.target.type === "number"));
+    if (e.key === "Enter") {
+      if (e.target && e.target.tagName === "BUTTON") return; // native click
+      if (state === "ask") { e.preventDefault(); submit(); }
+      else if (state === "reveal") { e.preventDefault(); next(); }
+      else if (state === "intro") { e.preventDefault(); startGame(); }
+    } else if (state === "ask" && !inText && (e.key === "ArrowUp" || e.key === "ArrowDown") && !(e.target && e.target.type === "range")) {
+      e.preventDefault(); bumpE(e.key === "ArrowUp" ? 1 : -1);
+    }
+  });
+
+  function rerender() {
+    renderCats();
+    if (state === "intro") renderBestIntro();
+    if (state === "ask" || state === "reveal") renderQuestion();
+    if (state === "reveal") renderReveal();
+    if (state === "end") renderEnd();
+    setStatus();
+  }
+  // expose for tests
+  window.__fermi = { parseGuess: parseGuess, scoreOf: scoreOf, stepProduct: stepProduct, Q: QUESTIONS };
+
+  applyTheme(lsGet("theme") || "dark");
+  applyLang(lang, false);
+})();
+</script>
+</body>
+</html>
