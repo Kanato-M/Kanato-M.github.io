@@ -3,7 +3,14 @@
   "use strict";
   var K = window.K, bi = K.bi, esc = K.esc;
   var $ = function (id) { return document.getElementById(id); };
-  var TYPES = { game: { ja: "ゲーム", en: "Games", icon: "🎮" }, puzzle: { ja: "パズル", en: "Puzzles", icon: "🧩" }, tool: { ja: "ツール", en: "Tools", icon: "🛠" } };
+  var TYPES = {
+    game: { ja: "アクション", en: "Action", icon: "🎮" },
+    puzzle: { ja: "パズル", en: "Puzzles", icon: "🧩" },
+    board: { ja: "ボードゲーム", en: "Board games", icon: "♟️" },
+    quiz: { ja: "クイズ・推定", en: "Quizzes", icon: "💡" },
+    music: { ja: "音楽", en: "Music", icon: "🎵" },
+    tool: { ja: "ツール", en: "Tools", icon: "🛠" }
+  };
   var games = [], filter = "all";
 
   function url(p) { return /^https?:/.test(p) ? p : K.root + p; }
