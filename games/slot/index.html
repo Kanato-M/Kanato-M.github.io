@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Particle Slot</title>
+<style>
+  :root { --bg:#0a0f1f; --fg:#e9eefb; --muted:#98a3c0; --c1:#4de1ff; --c2:#ff5ca8; --c3:#ffd166; --ok:#5ef0a0; --vi:#8b7bff; --bad:#ff6b8b;
+    --card:rgba(255,255,255,.045); --card2:rgba(255,255,255,.08); --line:rgba(255,255,255,.12); --btnink:#07101f; --reelbg:#0f1630; --reelbg2:#18213f; --shadow:0 10px 30px rgba(0,0,0,.35); color-scheme:dark; }
+  body[data-t="light"] { --bg:#f6f7fb; --fg:#121a30; --muted:#5a6683; --c1:#0b8fb9; --c2:#d42f7c; --c3:#a8680a; --ok:#118a52; --vi:#5b4bd6; --bad:#c92a4f;
+    --card:#ffffff; --card2:#eef1f8; --line:rgba(18,26,48,.12); --btnink:#ffffff; --reelbg:#ffffff; --reelbg2:#e9edf7; --shadow:0 8px 24px rgba(18,26,48,.08); color-scheme:light; }
+  * { box-sizing:border-box; }
+  html, body { margin:0; height:100%; }
+  body { background:var(--bg); color:var(--fg); font-family:Inter, "Noto Sans JP", "Hiragino Sans", system-ui, sans-serif; line-height:1.5; -webkit-text-size-adjust:100%; user-select:none; -webkit-user-select:none; }
+  [data-l="en"] .ja, [data-l="ja"] .en { display:none !important; }
+  .mono { font-family:ui-monospace, monospace; }
+  #wrap { display:flex; flex-direction:column; height:100%; }
+  header { display:flex; align-items:center; gap:.45rem; padding:.6rem .9rem; border-bottom:1px solid var(--line); flex-shrink:0; }
+  header h1 { font-size:1rem; margin:0; flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .pill { font-family:ui-monospace, monospace; font-size:.78rem; color:var(--c3); border:1px solid var(--line); border-radius:999px; padding:.2rem .6rem; white-space:nowrap; }
+  button { font:inherit; cursor:pointer; border-radius:999px; border:1px solid var(--line); background:var(--card2); color:var(--fg); padding:.42rem .85rem; transition:transform .08s, background .15s, border-color .15s, opacity .15s; touch-action:manipulation; }
+  button:hover:not(:disabled) { border-color:var(--c1); }
+  button:active:not(:disabled) { transform:scale(.96); }
+  button:disabled { opacity:.38; cursor:default; }
+  button.sm { padding:.3rem .62rem; font-size:.82rem; }
+  button.primary { background:linear-gradient(90deg,var(--c1),var(--c2)); color:var(--btnink); border:0; font-weight:800; }
+  main { flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+  .layout { max-width:980px; margin:0 auto; padding:.8rem; display:grid; grid-template-columns:minmax(0,1fr) 290px; gap:.9rem; align-items:start; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:18px; padding:.9rem 1rem; box-shadow:var(--shadow); }
+  .hidden { display:none !important; }
+  .muted { color:var(--muted); }
+
+  /* machine */
+  .machine { padding:.8rem; background:linear-gradient(160deg, rgba(77,225,255,.10), rgba(255,92,168,.10)), var(--card); }
+  .topbar { display:flex; justify-content:space-between; align-items:flex-end; gap:.6rem; margin-bottom:.55rem; }
+  .lbl { font-size:.7rem; letter-spacing:.06em; color:var(--muted); text-transform:uppercase; }
+  .credits { font-family:ui-monospace, monospace; font-weight:800; font-size:clamp(1.15rem,4.5vw,1.5rem); color:var(--c3); }
+  .winv { font-family:ui-monospace, monospace; font-weight:900; font-size:clamp(1.15rem,4.5vw,1.5rem); text-align:right; background:linear-gradient(90deg,var(--c1),var(--c2)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  #msg { min-height:1.5em; text-align:center; font-weight:700; font-size:.92rem; margin:.1rem 0 .45rem; color:var(--fg); }
+  #msg.hot { color:var(--c3); }
+  .winwrap { position:relative; display:flex; gap:.35rem; align-items:stretch; }
+  .lnums { display:flex; flex-direction:column; justify-content:space-around; gap:2px; width:1.25rem; flex-shrink:0; }
+  .lnum { font-family:ui-monospace, monospace; font-size:.66rem; font-weight:800; text-align:center; border-radius:6px; padding:.1rem 0; color:var(--btnink); opacity:.25; transition:opacity .2s; }
+  .lnum.on { opacity:1; }
+  .window { position:relative; flex:1; display:grid; grid-template-columns:repeat(3,1fr); gap:6px; padding:6px; border-radius:14px; background:var(--reelbg2); border:1px solid var(--line); }
+  .reel { position:relative; height:calc(var(--ch, 96px) * 3); overflow:hidden; border-radius:10px; background:linear-gradient(180deg, var(--reelbg2), var(--reelbg) 18%, var(--reelbg) 82%, var(--reelbg2)); }
+  .reel.blur .cell { filter:blur(1.4px); }
+  .reel::after { content:""; position:absolute; inset:0; pointer-events:none; background:linear-gradient(180deg, rgba(0,0,0,.28), transparent 22%, transparent 78%, rgba(0,0,0,.28)); }
+  body[data-t="light"] .reel::after { background:linear-gradient(180deg, rgba(18,26,48,.10), transparent 22%, transparent 78%, rgba(18,26,48,.10)); }
+  .cell { position:absolute; left:0; right:0; top:0; height:var(--ch, 96px); display:flex; align-items:center; justify-content:center; will-change:transform; }
+  .cell svg { height:84%; width:auto; max-width:92%; display:block; }
+  .cell.win svg { animation:glow .7s ease-in-out infinite alternate; }
+  @keyframes glow { from { transform:scale(1); filter:drop-shadow(0 0 0 rgba(255,209,102,0)); } to { transform:scale(1.08); filter:drop-shadow(0 0 10px rgba(255,209,102,.95)); } }
+  svg.lines { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; overflow:visible; }
+  .stops { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin:.55rem 0 0 1.6rem; }
+  .stopb { border-radius:12px; font-weight:800; letter-spacing:.06em; padding:.55rem 0; font-size:.86rem; }
+  .stopb.armed { border-color:var(--c2); color:var(--c2); box-shadow:0 0 0 2px rgba(255,92,168,.2) inset; }
+  .controls { display:flex; flex-wrap:wrap; gap:.6rem .9rem; align-items:center; justify-content:space-between; margin-top:.75rem; }
+  .grp { display:flex; flex-direction:column; gap:.2rem; }
+  .seg { display:flex; gap:.25rem; }
+  .seg button { padding:.32rem .7rem; font-family:ui-monospace, monospace; font-weight:700; }
+  .seg button.on { background:var(--c1); color:var(--btnink); border-color:transparent; }
+  .betv { font-family:ui-monospace, monospace; font-weight:800; min-width:2.2rem; text-align:center; display:inline-block; }
+  #spinBtn { font-size:1.15rem; padding:.8rem 1.9rem; letter-spacing:.06em; min-width:8.5rem; }
+  #refillBtn { width:100%; margin-top:.7rem; padding:.7rem; font-weight:800; background:linear-gradient(90deg,var(--ok),var(--c1)); color:var(--btnink); border:0; }
+
+  /* side panel */
+  .side h2 { font-size:.95rem; margin:.1rem 0 .4rem; }
+  .pt { list-style:none; padding:0; margin:0; }
+  .pt li { display:flex; align-items:center; gap:.45rem; padding:.22rem .3rem; border-radius:10px; cursor:pointer; }
+  .pt li:hover, .pt li.sel { background:var(--card2); }
+  .pt .ic { display:flex; gap:1px; flex-shrink:0; }
+  .pt .ic svg { width:24px; height:24px; }
+  .pt .nm { flex:1; font-size:.82rem; min-width:0; }
+  .pt .x { font-family:ui-monospace, monospace; font-weight:800; color:var(--c3); font-size:.88rem; }
+  .rule { font-size:.78rem; color:var(--muted); margin:.45rem 0 0; }
+  #fact { margin-top:.6rem; font-size:.84rem; background:var(--card2); border-left:3px solid var(--vi); border-radius:0 10px 10px 0; padding:.5rem .7rem; min-height:3.2em; }
+  .stats { display:grid; grid-template-columns:1fr 1fr; gap:.4rem; margin-top:.2rem; }
+  .stats div { background:var(--card2); border-radius:10px; padding:.35rem .55rem; }
+  .stats b { display:block; font-family:ui-monospace, monospace; font-size:.95rem; }
+  .stats span { font-size:.7rem; color:var(--muted); }
+  .side .card + .card { margin-top:.8rem; }
+  .kbd { font-family:ui-monospace, monospace; font-size:.8em; border:1px solid var(--line); border-bottom-width:2px; border-radius:5px; padding:0 .3rem; }
+  #fx { position:fixed; inset:0; width:100%; height:100%; pointer-events:none; z-index:15; }
+  #help { position:fixed; inset:0; background:rgba(5,8,18,.7); display:flex; align-items:center; justify-content:center; padding:1rem; z-index:20; }
+  #help .card { max-width:520px; width:100%; max-height:90%; overflow-y:auto; }
+  #help ul { padding-left:1.2rem; margin:.4rem 0; font-size:.92rem; } #help li { margin:.25rem 0; }
+  @media (max-width:760px) {
+    .layout { grid-template-columns:minmax(0,1fr); padding:.6rem; }
+    .side { display:grid; grid-template-columns:1fr; }
+  }
+  @media (max-width:420px) {
+    header h1 { font-size:.9rem; }
+    .machine { padding:.6rem; }
+    #spinBtn { min-width:0; flex:1 1 100%; padding:.75rem 1rem; }
+    .controls { gap:.5rem .6rem; }
+  }
+</style>
+</head>
+<body data-l="ja" data-t="dark">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <radialGradient id="gu" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#ffb3c2"/><stop offset="1" stop-color="#e2365c"/></radialGradient>
+    <radialGradient id="gd" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#a9c6ff"/><stop offset="1" stop-color="#2f62d9"/></radialGradient>
+    <radialGradient id="ge" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#c9f6ff"/><stop offset="1" stop-color="#17a9cf"/></radialGradient>
+    <radialGradient id="gn" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#d4ffe7"/><stop offset="1" stop-color="#22b874"/></radialGradient>
+    <radialGradient id="gG" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#fff2c4"/><stop offset="1" stop-color="#f0a92c"/></radialGradient>
+    <radialGradient id="gg" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#ffd8b0"/><stop offset="1" stop-color="#e86a17"/></radialGradient>
+    <radialGradient id="gW" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#d9d2ff"/><stop offset="1" stop-color="#5a46e0"/></radialGradient>
+    <radialGradient id="gH" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#fffbe6"/><stop offset=".55" stop-color="#ffd166"/><stop offset="1" stop-color="#d4880a"/></radialGradient>
+    <linearGradient id="gHr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4de1ff"/><stop offset=".5" stop-color="#ff5ca8"/><stop offset="1" stop-color="#ffd166"/></linearGradient>
+  </defs>
+</svg>
+<canvas id="fx"></canvas>
+<div id="wrap">
+  <header>
+    <h1>🎰 <span class="ja">素粒子スロット</span><span class="en">Particle Slot</span></h1>
+    <span class="pill" id="status">1000 GeV</span>
+    <button id="muteBtn" class="sm" type="button" aria-label="mute">🔊</button>
+    <button id="langBtn" class="sm" type="button">JA / EN</button>
+    <button id="helpBtn" class="sm" type="button" aria-label="How to play">?</button>
+  </header>
+  <main>
+    <div class="layout">
+      <section class="card machine">
+        <div class="topbar">
+          <div><div class="lbl"><span class="ja">クレジット</span><span class="en">Credits</span></div><div class="credits" id="credits">1000 GeV</div></div>
+          <div><div class="lbl" style="text-align:right">WIN</div><div class="winv" id="winv">0</div></div>
+        </div>
+        <div id="msg"></div>
+        <div class="winwrap">
+          <div class="lnums" id="lnums"></div>
+          <div class="window" id="window">
+            <div class="reel" id="r0"></div><div class="reel" id="r1"></div><div class="reel" id="r2"></div>
+            <svg class="lines" id="lines" preserveAspectRatio="none"></svg>
+          </div>
+        </div>
+        <div class="stops">
+          <button class="stopb" type="button" id="s0" disabled>STOP</button>
+          <button class="stopb" type="button" id="s1" disabled>STOP</button>
+          <button class="stopb" type="button" id="s2" disabled>STOP</button>
+        </div>
+        <div class="controls">
+          <div class="grp"><div class="lbl"><span class="ja">ライン</span><span class="en">Lines</span></div>
+            <div class="seg" id="lineSeg"><button type="button" data-n="1">1</button><button type="button" data-n="3">3</button><button type="button" data-n="5">5</button></div></div>
+          <div class="grp"><div class="lbl"><span class="ja">1ラインのBET</span><span class="en">Bet / line</span></div>
+            <div class="seg"><button type="button" id="betDown" aria-label="bet down">−</button><span class="betv" id="betv" style="align-self:center">1</span><button type="button" id="betUp" aria-label="bet up">+</button></div></div>
+          <div class="grp"><div class="lbl"><span class="ja">合計BET</span><span class="en">Total bet</span></div><div class="mono" style="font-weight:800" id="totbet">5 GeV</div></div>
+          <button class="primary" type="button" id="spinBtn">SPIN</button>
+        </div>
+        <button type="button" id="refillBtn" class="hidden">⚡ <span class="ja">加速器を再起動（+1000 GeV）</span><span class="en">Restart the accelerator (+1000 GeV)</span></button>
+      </section>
+
+      <aside class="side">
+        <div class="card">
+          <h2>📜 <span class="ja">配当表（× 1ラインBET）</span><span class="en">Paytable (× bet per line)</span></h2>
+          <ul class="pt" id="paytable"></ul>
+          <p class="rule"><span class="ja">μ（ミューオン）はワイルド：H 以外のどの粒子の代わりにもなります。uud / udd は並び順自由（ワイルド不可）。</span><span class="en">μ (muon) is wild: it substitutes for any particle except H. uud / udd pay in any order (no wilds).</span></p>
+          <div id="fact"><span class="ja">💡 粒子をタップすると豆知識が出ます。</span><span class="en">💡 Tap a particle for a fun fact.</span></div>
+        </div>
+        <div class="card">
+          <h2>📊 <span class="ja">統計</span><span class="en">Stats</span></h2>
+          <div class="stats">
+            <div><b id="stSpins">0</b><span class="ja">総スピン</span><span class="en">Spins</span></div>
+            <div><b id="stBig">0</b><span class="ja">最大WIN</span><span class="en">Biggest win</span></div>
+            <div><b id="stRtp">—</b><span class="ja">還元率（実績）</span><span class="en">Return (actual)</span></div>
+            <div><b id="stTheo">—</b><span class="ja">理論還元率</span><span class="en">Theoretical RTP</span></div>
+          </div>
+          <div style="margin-top:.55rem;text-align:right"><button type="button" class="sm" id="resetStats"><span class="ja">統計リセット</span><span class="en">Reset stats</span></button></div>
+        </div>
+      </aside>
+    </div>
+  </main>
+</div>
+
+<div id="help" class="hidden" role="dialog" aria-modal="true">
+  <div class="card">
+    <h2 style="font-size:1.2rem;margin-top:0">❓ <span class="ja">遊び方</span><span class="en">How to play</span></h2>
+    <div class="ja"><ul>
+      <li>ライン数（1/3/5）と1ラインのBETを選んで <b>SPIN</b>。クレジットは架空の「GeV」で、お金は一切かかりません。</li>
+      <li>有効ラインに同じ粒子が3つ並ぶと配当。μ はワイルド（H 以外の代わり）。u・u・d（陽子）や u・d・d（中性子）も小当たり！</li>
+      <li>ライン：1＝中段、2＝上段、3＝下段、4・5＝斜め。</li>
+      <li>リールは自動で左から止まります。<b>STOP</b> ボタンで好きなリールを止める「目押し」もできます。</li>
+      <li><span class="kbd">Space</span> スピン／左のリールから停止、<span class="kbd">↑</span><span class="kbd">↓</span> BET、<span class="kbd">L</span> ライン切替。</li>
+      <li>GeV が尽きたら「加速器を再起動」で 1000 GeV 補充。</li>
+    </ul></div>
+    <div class="en"><ul>
+      <li>Pick 1/3/5 lines and a bet per line, then <b>SPIN</b>. Credits are fictional “GeV” — no real money, no purchases.</li>
+      <li>Three identical particles on an active line pay out. μ is wild (substitutes for all except H). u·u·d (proton) and u·d·d (neutron) pay small wins too!</li>
+      <li>Lines: 1 = middle, 2 = top, 3 = bottom, 4 & 5 = diagonals.</li>
+      <li>Reels stop automatically from left to right, or hit <b>STOP</b> to stop any reel yourself.</li>
+      <li><span class="kbd">Space</span> spin / stop the next reel, <span class="kbd">↑</span><span class="kbd">↓</span> bet, <span class="kbd">L</span> cycle lines.</li>
+      <li>Out of GeV? “Restart the accelerator” for another 1000 GeV.</li>
+    </ul></div>
+    <div style="text-align:center;margin-top:.6rem"><button class="primary" id="helpClose" type="button" style="padding:.6rem 1.6rem">OK</button></div>
+  </div>
+</div>
+
+<script>
+/*SLOT_CORE_BEGIN*/
+var STRIPS = [
+  ["u","e","d","n","G","u","g","d","n","H","u","d","e","g","n","W","u","d","G","n","e","u","g","d"],
+  ["d","n","u","g","e","d","W","u","n","G","d","u","g","n","e","H","d","u","n","g","G","e","d","u"],
+  ["n","u","G","d","e","u","g","n","d","W","u","e","d","n","g","H","u","d","G","n","e","d","g","u"]
+];
+var PAY = { H:500, W:100, G:60, g:30, e:20, n:12, u:8, d:8, P:4, N:4 };
+var LINES = [[1,1,1],[0,0,0],[2,2,2],[0,1,2],[2,1,0]];
+function evalLine(a, b, c) {
+  var s = [a, b, c], nw = s.filter(function (x) { return x !== "W"; });
+  if (nw.length === 0) return { kind: "W", mult: PAY.W };
+  var t = nw[0], same = nw.every(function (x) { return x === t; });
+  if (same) {
+    if (t === "H") return nw.length === 3 ? { kind: "H", mult: PAY.H } : null;
+    return { kind: t, mult: PAY[t] };
+  }
+  var k = s.slice().sort().join("");
+  if (k === "duu") return { kind: "P", mult: PAY.P };
+  if (k === "ddu") return { kind: "N", mult: PAY.N };
+  return null;
+}
+function evalSpin(stops, nLines) {
+  var grid = [], wins = [], mult = 0;
+  for (var i = 0; i < 3; i++) {
+    var L = STRIPS[i].length, col = [];
+    for (var r = 0; r < 3; r++) col.push(STRIPS[i][(stops[i] + r) % L]);
+    grid.push(col);
+  }
+  for (var l = 0; l < nLines; l++) {
+    var ln = LINES[l], w = evalLine(grid[0][ln[0]], grid[1][ln[1]], grid[2][ln[2]]);
+    if (w) { wins.push({ line: l, kind: w.kind, mult: w.mult }); mult += w.mult; }
+  }
+  return { grid: grid, wins: wins, mult: mult };
+}
+function theoreticalRTP(nLines) {
+  var L0 = STRIPS[0].length, L1 = STRIPS[1].length, L2 = STRIPS[2].length, sum = 0;
+  for (var a = 0; a < L0; a++) for (var b = 0; b < L1; b++) for (var c = 0; c < L2; c++) sum += evalSpin([a, b, c], nLines).mult;
+  return sum / (L0 * L1 * L2) / nLines;
+}
+/*SLOT_CORE_END*/
+
+(function () {
+  "use strict";
+  var $ = function (id) { return document.getElementById(id); };
+  function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  function lsJSON(k, d) { try { var v = JSON.parse(localStorage.getItem(k)); return v && typeof v === "object" ? v : d; } catch (e) { return d; } }
+
+  /* ---------- language & theme ---------- */
+  var lang = lsGet("lang");
+  if (lang !== "ja" && lang !== "en") lang = ((navigator.language || "").toLowerCase().indexOf("ja") === 0) ? "ja" : "en";
+  var T = function (ja, en) { return lang === "ja" ? ja : en; };
+  function applyLang(l, save) { lang = l; document.body.setAttribute("data-l", l); document.documentElement.lang = l; if (save) lsSet("lang", l); renderAll(); }
+  function applyTheme(t) { document.body.setAttribute("data-t", t === "light" ? "light" : "dark"); drawLines(); }
+  window.addEventListener("storage", function (e) {
+    if (e.key === "lang" && (e.newValue === "ja" || e.newValue === "en")) applyLang(e.newValue, false);
+    if (e.key === "theme" && e.newValue) applyTheme(e.newValue);
+  });
+  $("langBtn").addEventListener("click", function () { applyLang(lang === "ja" ? "en" : "ja", true); });
+  $("helpBtn").addEventListener("click", function () { $("help").classList.remove("hidden"); });
+  $("helpClose").addEventListener("click", function () { $("help").classList.add("hidden"); });
+  $("help").addEventListener("click", function (e) { if (e.target === $("help")) $("help").classList.add("hidden"); });
+
+  /* ---------- symbols ---------- */
+  var SYM = {
+    H: { ja: "ヒッグス粒子", en: "Higgs boson", fj: "2012年、CERN の LHC で ATLAS と CMS 実験が発見。質量は約 125 GeV/c²。素粒子に質量を与えるヒッグス場の「さざ波」です。", fe: "Discovered at CERN's LHC by ATLAS and CMS in 2012; mass ≈ 125 GeV/c². It is a ripple of the Higgs field that gives elementary particles their mass." },
+    W: { ja: "ミューオン（ワイルド）", en: "Muon (wild)", fj: "電子の約207倍重い仲間。寿命は 2.2 µs しかないのに、宇宙線ミューオンは相対論的な時間の遅れのおかげで地上まで届きます。", fe: "A ~207× heavier cousin of the electron. It lives only 2.2 µs, yet cosmic-ray muons reach the ground thanks to relativistic time dilation." },
+    G: { ja: "光子（γ）", en: "Photon (γ)", fj: "電磁気力を伝える質量ゼロのゲージ粒子。光も電波も X 線も、すべて光子です。", fe: "The massless gauge boson of electromagnetism — light, radio waves and X-rays are all photons." },
+    g: { ja: "グルーオン", en: "Gluon", fj: "強い力を伝える粒子。8種類の「色」の組み合わせがあり、グルーオン同士も相互作用します。EIC は陽子や原子核の中のグルーオンを詳しく調べるための加速器です。", fe: "Carrier of the strong force. It comes in 8 colour combinations and gluons interact with each other. The EIC is built to image the gluons inside protons and nuclei." },
+    e: { ja: "電子", en: "Electron", fj: "質量 約0.511 MeV/c²。1897年に J. J. トムソンが発見した、最初に見つかった素粒子です。", fe: "Mass ≈ 0.511 MeV/c². Discovered by J. J. Thomson in 1897 — the first elementary particle ever found." },
+    n: { ja: "ニュートリノ", en: "Neutrino", fj: "電荷ゼロで、物質とほとんど反応しません。太陽からのニュートリノが 1 cm² あたり毎秒 約650億個、あなたの体を通り抜けています。", fe: "Electrically neutral and barely interacting. About 65 billion solar neutrinos pass through every square centimetre of you each second." },
+    u: { ja: "アップクォーク", en: "Up quark", fj: "電荷 +2/3 e。陽子は u 2個と d 1個でできています。", fe: "Charge +2/3 e. A proton is made of two up quarks and one down quark." },
+    d: { ja: "ダウンクォーク", en: "Down quark", fj: "電荷 −1/3 e。中性子は u 1個と d 2個でできています。", fe: "Charge −1/3 e. A neutron is made of one up quark and two down quarks." },
+    P: { ja: "陽子（u u d）", en: "Proton (u u d)", fj: "陽子の質量 938 MeV のうち、3つのクォークの質量の合計は約 9 MeV（約1%）だけ。残りはクォークとグルーオンの運動と相互作用のエネルギーです。", fe: "Of the proton's 938 MeV mass, the three quark masses add up to only ~9 MeV (~1%); the rest is the energy of moving, interacting quarks and gluons." },
+    N: { ja: "中性子（u d d）", en: "Neutron (u d d)", fj: "原子核の外に出た中性子は、平均寿命 約15分で陽子・電子・反ニュートリノに崩壊します（β崩壊）。", fe: "A free neutron decays into a proton, an electron and an antineutrino with a mean lifetime of about 15 minutes (beta decay)." }
+  };
+  var TXT = 'font-family="Georgia, \'Times New Roman\', serif" font-style="italic" font-weight="700" text-anchor="middle"';
+  function svgSym(s) {
+    var o = '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-label="' + s + '">';
+    if (s === "H") {
+      o += '<circle cx="50" cy="50" r="46" fill="none" stroke="url(#gHr)" stroke-width="5"/><circle cx="50" cy="50" r="38" fill="url(#gH)"/>' +
+        '<text x="50" y="66" ' + TXT + ' font-size="46" fill="#5a3200">H</text><text x="73" y="40" font-family="system-ui" font-size="14" font-weight="800" fill="#5a3200">0</text>';
+    } else if (s === "W") {
+      o += '<circle cx="50" cy="47" r="40" fill="url(#gW)"/><text x="50" y="62" ' + TXT + ' font-size="46" fill="#fff">μ</text>' +
+        '<rect x="18" y="74" width="64" height="20" rx="10" fill="#ffd166"/><text x="50" y="89" font-family="system-ui,sans-serif" font-size="14" font-weight="900" text-anchor="middle" fill="#3b2a00">WILD</text>';
+    } else if (s === "G") {
+      o += '<circle cx="50" cy="50" r="40" fill="url(#gG)"/><path d="M14 80 q6 -8 12 0 t12 0 t12 0 t12 0 t12 0 t12 0" fill="none" stroke="#8a5300" stroke-width="3" stroke-linecap="round" opacity=".75"/>' +
+        '<text x="50" y="62" ' + TXT + ' font-size="48" fill="#5a3200">γ</text>';
+    } else if (s === "g") {
+      o += '<circle cx="50" cy="50" r="40" fill="url(#gg)"/><path d="M16 82 c4 -10 10 -10 8 0 c4 -10 10 -10 8 0 c4 -10 10 -10 8 0 c4 -10 10 -10 8 0 c4 -10 10 -10 8 0 c4 -10 10 -10 8 0 c4 -10 10 -10 8 0" fill="none" stroke="#7a2e00" stroke-width="2.6" opacity=".7"/>' +
+        '<text x="50" y="58" ' + TXT + ' font-size="48" fill="#fff">g</text>';
+    } else if (s === "e") {
+      o += '<circle cx="50" cy="50" r="40" fill="url(#ge)"/><text x="46" y="65" ' + TXT + ' font-size="48" fill="#06364a">e</text><text x="70" y="42" font-family="system-ui" font-size="26" font-weight="900" fill="#06364a">−</text>';
+    } else if (s === "n") {
+      o += '<circle cx="50" cy="50" r="40" fill="url(#gn)"/><text x="50" y="64" ' + TXT + ' font-size="50" fill="#063b22">ν</text>';
+    } else if (s === "u") {
+      o += '<circle cx="50" cy="50" r="40" fill="url(#gu)"/><text x="50" y="63" ' + TXT + ' font-size="48" fill="#fff">u</text>';
+    } else if (s === "d") {
+      o += '<circle cx="50" cy="50" r="40" fill="url(#gd)"/><text x="50" y="65" ' + TXT + ' font-size="48" fill="#fff">d</text>';
+    }
+    return o + "</svg>";
+  }
+  var SVGC = {}; Object.keys(SYM).forEach(function (k) { if (k !== "P" && k !== "N") SVGC[k] = svgSym(k); });
+
+  /* ---------- persistent state ---------- */
+  var credits = parseInt(lsGet("slot.credits"), 10); if (!(credits >= 0)) credits = 1000;
+  var stats = lsJSON("slot.stats", null) || { spins: 0, bet: 0, won: 0, big: 0 };
+  var cfg = lsJSON("slot.cfg", null) || { lines: 5, bet: 1 };
+  var BETS = [1, 2, 5, 10, 20];
+  if ([1, 3, 5].indexOf(cfg.lines) < 0) cfg.lines = 5;
+  if (BETS.indexOf(cfg.bet) < 0) cfg.bet = 1;
+  var muted = lsGet("slot.mute") === "1";
+  function save() { lsSet("slot.credits", String(credits)); lsSet("slot.stats", JSON.stringify(stats)); lsSet("slot.cfg", JSON.stringify(cfg)); }
+  function totalBet() { return cfg.lines * cfg.bet; }
+
+  /* ---------- audio ---------- */
+  var AC = null, master = null, noiseBuf = null;
+  function ensureAudio() {
+    if (AC) { if (AC.state === "suspended") AC.resume(); return; }
+    var C = window.AudioContext || window.webkitAudioContext; if (!C) return;
+    try {
+      AC = new C(); master = AC.createGain(); master.gain.value = muted ? 0 : 0.6; master.connect(AC.destination);
+      noiseBuf = AC.createBuffer(1, AC.sampleRate * 0.3, AC.sampleRate);
+      var d = noiseBuf.getChannelData(0); for (var i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    } catch (e) { AC = null; }
+  }
+  function tone(f, t0, dur, type, vol, f2) {
+    if (!AC || muted) return;
+    var o = AC.createOscillator(), g = AC.createGain();
+    o.type = type || "triangle"; o.frequency.setValueAtTime(f, t0);
+    if (f2) o.frequency.exponentialRampToValueAtTime(f2, t0 + dur);
+    g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(vol || 0.2, t0 + 0.006); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    o.connect(g); g.connect(master); o.start(t0); o.stop(t0 + dur + 0.02);
+  }
+  function noise(t0, dur, vol, freq) {
+    if (!AC || muted) return;
+    var s = AC.createBufferSource(), f = AC.createBiquadFilter(), g = AC.createGain();
+    s.buffer = noiseBuf; f.type = "bandpass"; f.frequency.value = freq || 3000; f.Q.value = 1.2;
+    g.gain.setValueAtTime(vol || 0.1, t0); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    s.connect(f); f.connect(g); g.connect(master); s.start(t0); s.stop(t0 + dur + 0.02);
+  }
+  var SND = {
+    tick: function () { if (AC) noise(AC.currentTime, 0.02, 0.05, 4200); },
+    clunk: function () { if (!AC) return; var t = AC.currentTime; tone(170, t, 0.13, "sine", 0.35, 55); noise(t, 0.06, 0.12, 900); },
+    lever: function () { if (!AC) return; var t = AC.currentTime; tone(300, t, 0.08, "square", 0.05, 600); },
+    count: function () { if (AC) tone(1320, AC.currentTime, 0.04, "square", 0.04); },
+    win: function () { if (!AC) return; var t = AC.currentTime; [523.25, 659.25, 783.99, 1046.5].forEach(function (f, i) { tone(f, t + i * 0.085, 0.22, "triangle", 0.22); }); },
+    small: function () { if (!AC) return; var t = AC.currentTime; tone(659.25, t, 0.12, "triangle", 0.18); tone(987.77, t + 0.08, 0.18, "triangle", 0.18); },
+    big: function () {
+      if (!AC) return; var t = AC.currentTime, seq = [523.25, 659.25, 783.99, 1046.5, 783.99, 1046.5, 1318.5, 1567.98];
+      seq.forEach(function (f, i) { tone(f, t + i * 0.1, 0.28, "square", 0.08); tone(f / 2, t + i * 0.1, 0.28, "triangle", 0.12); });
+      [523.25, 659.25, 783.99, 1046.5].forEach(function (f) { tone(f, t + 0.85, 0.9, "triangle", 0.12); });
+    }
+  };
+  function setMute(m) { muted = m; lsSet("slot.mute", m ? "1" : "0"); $("muteBtn").textContent = m ? "🔇" : "🔊"; if (master) master.gain.value = m ? 0 : 0.6; }
+  $("muteBtn").addEventListener("click", function () { ensureAudio(); setMute(!muted); });
+
+  /* ---------- reels ---------- */
+  var RNG = function (n) {
+    try { var a = new Uint32Array(1); crypto.getRandomValues(a); return a[0] % n; } catch (e) { return Math.floor(Math.random() * n); }
+  };
+  var VMAX = 15; // symbols per second
+  var reels = [0, 1, 2].map(function (i) {
+    var el = $("r" + i), cells = [];
+    for (var k = 0; k < 4; k++) { var c = document.createElement("div"); c.className = "cell"; el.appendChild(c); cells.push(c); }
+    var start = parseInt((lsJSON("slot.pos", null) || [])[i], 10);
+    return { i: i, el: el, cells: cells, L: STRIPS[i].length, pos: start >= 0 ? start : RNG(STRIPS[i].length), v: 0, phase: "idle", lastFloor: null };
+  });
+  var ch = 96;
+  function mod(a, n) { return ((a % n) + n) % n; }
+  function renderReel(r) {
+    var f = Math.floor(r.pos), fr = r.pos - f;
+    for (var k = 0; k < 4; k++) {
+      var c = r.cells[k], s = STRIPS[r.i][mod(f + k, r.L)];
+      if (c.dataset.s !== s) { c.innerHTML = SVGC[s]; c.dataset.s = s; }
+      c.style.transform = "translateY(" + ((k - fr) * ch).toFixed(2) + "px)";
+    }
+  }
+  function layout() {
+    var w = reels[0].el.getBoundingClientRect().width || 100;
+    var vh = window.innerHeight || 700;
+    ch = Math.max(56, Math.min(w * 0.74, 118, (vh - 330) / 3));
+    document.documentElement.style.setProperty("--ch", ch.toFixed(1) + "px");
+    reels.forEach(renderReel); drawLines();
+  }
+  window.addEventListener("resize", layout);
+
+  /* ---------- paylines overlay ---------- */
+  var LCOL = ["#ffd166", "#4de1ff", "#ff5ca8", "#5ef0a0", "#8b7bff"];
+  var winLines = [], showLinesUntil = 0;
+  function drawLines() {
+    var win = $("window"), svg = $("lines"); if (!win) return;
+    var W = win.clientWidth, Hh = win.clientHeight; svg.setAttribute("viewBox", "0 0 " + W + " " + Hh);
+    var pad = 6, colW = (W - pad * 2 - 12) / 3, s = "";
+    var show = [];
+    if (winLines.length) show = winLines.map(function (w) { return w.line; });
+    else if (performance.now() < showLinesUntil) for (var l = 0; l < cfg.lines; l++) show.push(l);
+    show.forEach(function (l) {
+      var pts = LINES[l].map(function (row, i) { return [pad + i * (colW + 6) + colW / 2, pad + (row + 0.5) * ch]; });
+      var d = "M" + 2 + "," + pts[0][1] + " L" + pts.map(function (p) { return p[0] + "," + p[1]; }).join(" L") + " L" + (W - 2) + "," + pts[2][1];
+      s += '<path d="' + d + '" fill="none" stroke="' + LCOL[l] + '" stroke-width="' + (winLines.length ? 4 : 2.5) + '" stroke-linecap="round" stroke-linejoin="round" opacity="' + (winLines.length ? .9 : .6) + '"' + (winLines.length ? ' stroke-dasharray="10 7"><animate attributeName="stroke-dashoffset" from="34" to="0" dur=".8s" repeatCount="indefinite"/></path>' : "/>");
+    });
+    svg.innerHTML = s;
+    var ln = $("lnums"), h = "";
+    for (var j = 0; j < 5; j++) h += '<div class="lnum' + (j < cfg.lines ? " on" : "") + '" style="background:' + LCOL[j] + '">' + (j + 1) + "</div>";
+    if (ln.innerHTML !== h) ln.innerHTML = h;
+  }
+  function flashLines() { showLinesUntil = performance.now() + 1200; winLines = []; clearWinCells(); drawLines(); setTimeout(drawLines, 1250); }
+
+  /* ---------- spin logic ---------- */
+  var spinning = false, result = null, spinT0 = 0, autoTimers = [], stopsDone = 0;
+  function canSpin() { return !spinning && credits >= totalBet(); }
+  function clearWinCells() { reels.forEach(function (r) { r.cells.forEach(function (c) { c.classList.remove("win"); }); }); }
+  function setMsg(t, hot) { $("msg").textContent = t || ""; $("msg").className = hot ? "hot" : ""; }
+
+  function spin() {
+    ensureAudio();
+    if (spinning) return;
+    if (credits < totalBet()) { setMsg(T("GeV が足りません。BET を下げるか加速器を再起動！", "Not enough GeV — lower the bet or restart the accelerator!")); updateUI(); return; }
+    credits -= totalBet(); stats.spins++; stats.bet += totalBet();
+    spinning = true; stopsDone = 0; winLines = []; clearWinCells(); drawLines(); counting = false; $("winv").textContent = "0";
+    setMsg(""); SND.lever();
+    result = [0, 1, 2].map(function (i) { return RNG(STRIPS[i].length); });
+    spinT0 = performance.now();
+    reels.forEach(function (r) { r.phase = "accel"; r.v = 0; r.t0 = spinT0 + r.i * 70; r.el.classList.add("blur"); });
+    autoTimers.forEach(clearTimeout);
+    autoTimers = [0, 1, 2].map(function (i) { return setTimeout(function () { stopReel(i, false); }, 1000 + i * 450); });
+    save(); updateUI();
+    requestAnimationFrame(loop);
+  }
+  // Begin decelerating reel i. manual = 目押し (stop at the next symbol boundary + 1),
+  // otherwise land on the pre-drawn random result (reindex while blurred at full speed).
+  function stopReel(i, manual) {
+    var r = reels[i];
+    if (!spinning || (r.phase !== "spin" && r.phase !== "accel")) return;
+    if (manual && r.phase === "accel") return;
+    var now = performance.now();
+    if (r.phase === "accel") { r.v = VMAX; }
+    var target;
+    if (manual) {
+      target = Math.floor(r.pos) - 1;
+      result[i] = mod(target, r.L);
+    } else {
+      var want = result[i], base = Math.floor(r.pos) - 2;
+      var shift = mod(want - base, r.L);
+      r.pos += shift; r.lastFloor = Math.floor(r.pos); // invisible at full blur speed
+      target = Math.floor(r.pos) - 2;
+    }
+    r.phase = "stopping"; r.from = r.pos; r.target = target; r.ts = now;
+    r.T = Math.max(0.12, 3 * (r.from - r.target) / Math.max(r.v, 1)) * 1000;
+    clearTimeout(autoTimers[i]);
+    $("s" + i).disabled = true; $("s" + i).classList.remove("armed");
+  }
+  var lastTs = 0;
+  function loop(ts) {
+    var dt = Math.min(0.05, (ts - (lastTs || ts)) / 1000); lastTs = ts;
+    var active = false;
+    reels.forEach(function (r) {
+      if (r.phase === "accel") {
+        active = true;
+        if (ts >= r.t0) { r.v = Math.min(VMAX, r.v + VMAX * dt / 0.25); if (r.v >= VMAX) { r.phase = "spin"; $("s" + r.i).disabled = false; $("s" + r.i).classList.add("armed"); } }
+        r.pos -= r.v * dt;
+      } else if (r.phase === "spin") {
+        active = true; r.pos -= r.v * dt;
+      } else if (r.phase === "stopping") {
+        active = true;
+        var u = Math.min(1, (ts - r.ts) / r.T), e = 1 - Math.pow(1 - u, 3);
+        r.pos = r.from - (r.from - r.target) * e;
+        if (u > 0.55) r.el.classList.remove("blur");
+        if (u >= 1) { r.pos = r.target; r.phase = "bounce"; r.ts = ts; SND.clunk(); }
+      } else if (r.phase === "bounce") {
+        active = true;
+        var ub = Math.min(1, (ts - r.ts) / 150);
+        r.pos = r.target - 0.08 * Math.sin(Math.PI * ub);
+        if (ub >= 1) { r.pos = mod(r.target, r.L); r.phase = "idle"; r.v = 0; reelStopped(r); }
+      }
+      var fl = Math.floor(r.pos);
+      if (r.lastFloor !== null && fl !== r.lastFloor && r.i === firstMoving() && (r.phase === "spin" || r.phase === "accel")) SND.tick();
+      r.lastFloor = fl;
+      renderReel(r);
+    });
+    if (active) requestAnimationFrame(loop); else lastTs = 0;
+  }
+  function firstMoving() { for (var i = 0; i < 3; i++) if (reels[i].phase === "spin" || reels[i].phase === "accel") return i; return -1; }
+  function reelStopped(r) {
+    stopsDone++;
+    if (stopsDone === 3) finishSpin();
+  }
+  function finishSpin() {
+    var stops = reels.map(function (r) { return mod(Math.round(r.pos), r.L); });
+    lsSet("slot.pos", JSON.stringify(stops));
+    var res = evalSpin(stops, cfg.lines), win = res.mult * cfg.bet;
+    spinning = false;
+    credits += win; stats.won += win; if (win > stats.big) stats.big = win;
+    save();
+    if (res.wins.length) {
+      winLines = res.wins;
+      res.wins.forEach(function (w) { LINES[w.line].forEach(function (row, i) { reels[i].cells[row].classList.add("win"); }); });
+      drawLines();
+      var kinds = {}; res.wins.forEach(function (w) { kinds[w.kind] = (kinds[w.kind] || 0) + 1; });
+      var parts = Object.keys(kinds).map(function (k) { return msgFor(k) + (kinds[k] > 1 ? " ×" + kinds[k] : ""); });
+      var big = res.wins.some(function (w) { return w.kind === "H" || w.kind === "W"; }) || win >= totalBet() * 15;
+      setMsg(parts.join(" · "), true);
+      countUp(win, res.wins.some(function (w) { return w.kind === "H"; }) ? "jackpot" : big ? "big" : (res.mult >= 8 ? "win" : "small"));
+    } else {
+      setMsg(T("ハズレ… 次の衝突に期待！", "No hit… wait for the next collision!"));
+    }
+    updateUI();
+  }
+  function msgFor(k) {
+    return {
+      H: T("🌟 ヒッグス発見！ JACKPOT", "🌟 Higgs discovered! JACKPOT"), W: T("μμμ トリプルミューオン！", "μμμ Triple muon!"),
+      P: T("陽子が誕生！(uud)", "Proton formed! (uud)"), N: T("中性子が誕生！(udd)", "Neutron formed! (udd)")
+    }[k] || ("3 × " + T(SYM[k].ja, SYM[k].en));
+  }
+  var counting = false;
+  function countUp(target, level) {
+    var el = $("winv"), t0 = performance.now(), dur = Math.min(2200, 350 + target * 4), last = -1;
+    counting = true;
+    if (level === "jackpot" || level === "big") { SND.big(); burst(level === "jackpot" ? 260 : 140); }
+    else if (level === "win") SND.win(); else SND.small();
+    (function step(ts) {
+      if (!counting) return;
+      var u = Math.min(1, (ts - t0) / dur), v = Math.round(target * (1 - Math.pow(1 - u, 2)));
+      el.textContent = "+" + v;
+      var q = Math.floor(u * 14); if (q !== last && u < 1) { last = q; if (level !== "jackpot" && level !== "big") SND.count(); }
+      if (u < 1) requestAnimationFrame(step); else counting = false;
+    })(t0);
+  }
+
+  /* ---------- confetti ---------- */
+  var fx = $("fx"), fctx = fx.getContext("2d"), parts = [], fxOn = false;
+  function burst(n) {
+    var d = Math.min(window.devicePixelRatio || 1, 2); fx.width = innerWidth * d; fx.height = innerHeight * d; fctx.setTransform(d, 0, 0, d, 0, 0);
+    var rc = $("window").getBoundingClientRect(), cx = rc.left + rc.width / 2, cy = rc.top + rc.height / 2;
+    var cols = ["#4de1ff", "#ff5ca8", "#ffd166", "#5ef0a0", "#8b7bff", "#ffffff"];
+    for (var i = 0; i < n; i++) {
+      var a = Math.random() * Math.PI * 2, sp = 3 + Math.random() * 9;
+      parts.push({ x: cx, y: cy, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 4, life: 1, c: cols[i % cols.length], r: 2 + Math.random() * 3.5, sq: Math.random() < 0.5, rot: Math.random() * 6 });
+    }
+    if (!fxOn) { fxOn = true; requestAnimationFrame(fxLoop); }
+  }
+  function fxLoop() {
+    fctx.clearRect(0, 0, innerWidth, innerHeight);
+    parts = parts.filter(function (p) { return p.life > 0 && p.y < innerHeight + 20; });
+    parts.forEach(function (p) {
+      p.vy += 0.22; p.vx *= 0.985; p.x += p.vx; p.y += p.vy; p.life -= 0.009; p.rot += 0.2;
+      fctx.globalAlpha = Math.max(0, p.life); fctx.fillStyle = p.c;
+      if (p.sq) { fctx.save(); fctx.translate(p.x, p.y); fctx.rotate(p.rot); fctx.fillRect(-p.r, -p.r / 2, p.r * 2, p.r); fctx.restore(); }
+      else { fctx.beginPath(); fctx.arc(p.x, p.y, p.r, 0, 6.283); fctx.fill(); }
+    });
+    fctx.globalAlpha = 1;
+    if (parts.length) requestAnimationFrame(fxLoop); else { fxOn = false; fctx.clearRect(0, 0, innerWidth, innerHeight); }
+  }
+
+  /* ---------- UI ---------- */
+  function fmt(n) { return n.toLocaleString(lang === "ja" ? "ja-JP" : "en-US"); }
+  function updateUI() {
+    $("credits").textContent = fmt(credits) + " GeV";
+    $("status").textContent = fmt(credits) + " GeV";
+    $("betv").textContent = cfg.bet;
+    $("totbet").textContent = totalBet() + " GeV";
+    Array.prototype.forEach.call($("lineSeg").children, function (b) { b.classList.toggle("on", +b.dataset.n === cfg.lines); b.disabled = spinning; });
+    $("betDown").disabled = spinning || BETS.indexOf(cfg.bet) === 0;
+    $("betUp").disabled = spinning || BETS.indexOf(cfg.bet) === BETS.length - 1;
+    var sb = $("spinBtn");
+    sb.disabled = spinning ? firstMoving() < 0 : credits < totalBet();
+    sb.textContent = spinning ? "STOP" : "SPIN";
+    $("refillBtn").classList.toggle("hidden", spinning || credits >= totalBet());
+    if (!spinning) for (var i = 0; i < 3; i++) { $("s" + i).disabled = true; $("s" + i).classList.remove("armed"); }
+    $("stSpins").textContent = fmt(stats.spins);
+    $("stBig").textContent = fmt(stats.big);
+    $("stRtp").textContent = stats.bet > 0 ? (100 * stats.won / stats.bet).toFixed(1) + "%" : "—";
+  }
+  var THEO = theoreticalRTP(5);
+  $("stTheo").textContent = (100 * THEO).toFixed(1) + "%";
+  function renderPaytable() {
+    var rows = [["H", 500], ["W", 100], ["G", 60], ["g", 30], ["e", 20], ["n", 12], ["u", 8], ["d", 8], ["P", 4], ["N", 4]];
+    var h = "";
+    rows.forEach(function (r) {
+      var k = r[0], ic;
+      if (k === "P") ic = SVGC.u + SVGC.u + SVGC.d; else if (k === "N") ic = SVGC.u + SVGC.d + SVGC.d; else ic = SVGC[k] + SVGC[k] + SVGC[k];
+      h += '<li data-k="' + k + '" class="' + (k === factKey ? "sel" : "") + '" tabindex="0"><span class="ic">' + ic + '</span><span class="nm">' + T(SYM[k].ja, SYM[k].en) + '</span><span class="x">×' + PAY[k] + "</span></li>";
+    });
+    $("paytable").innerHTML = h;
+  }
+  var factKey = null;
+  function showFact(k) {
+    factKey = k; renderPaytable();
+    $("fact").innerHTML = "💡 <b>" + T(SYM[k].ja, SYM[k].en) + "</b>：" + T(SYM[k].fj, SYM[k].fe);
+  }
+  $("paytable").addEventListener("click", function (e) { var li = e.target.closest("li"); if (li) showFact(li.dataset.k); });
+  $("paytable").addEventListener("keydown", function (e) { if (e.key === "Enter") { var li = e.target.closest("li"); if (li) showFact(li.dataset.k); } });
+
+  $("lineSeg").addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b || spinning) return; ensureAudio(); cfg.lines = +b.dataset.n; save(); flashLines(); updateUI(); });
+  function bet(d) { if (spinning) return; var i = BETS.indexOf(cfg.bet) + d; if (i < 0 || i >= BETS.length) return; cfg.bet = BETS[i]; save(); updateUI(); }
+  $("betDown").addEventListener("click", function () { bet(-1); });
+  $("betUp").addEventListener("click", function () { bet(1); });
+  $("spinBtn").addEventListener("click", function () { if (spinning) { var i = firstMoving(); if (i >= 0) stopReel(i, true); } else spin(); });
+  [0, 1, 2].forEach(function (i) { $("s" + i).addEventListener("click", function () { stopReel(i, true); }); });
+  $("refillBtn").addEventListener("click", function () {
+    ensureAudio(); credits += 1000; save(); updateUI();
+    setMsg(T("⚡ 加速器を再起動しました！ +1000 GeV", "⚡ Accelerator restarted! +1000 GeV"), true);
+    if (AC) { var t = AC.currentTime; tone(110, t, 0.8, "sawtooth", 0.06, 880); }
+  });
+  $("resetStats").addEventListener("click", function () { stats = { spins: 0, bet: 0, won: 0, big: 0 }; save(); updateUI(); });
+
+  document.addEventListener("keydown", function (e) {
+    if (!$("help").classList.contains("hidden")) { if (e.key === "Escape" || e.key === "Enter") $("help").classList.add("hidden"); return; }
+    if (e.code === "Space" || e.key === " ") {
+      e.preventDefault(); if (e.repeat) return;
+      if (spinning) { var i = firstMoving(); if (i >= 0) stopReel(i, true); } else spin();
+    } else if (e.key === "ArrowUp") { e.preventDefault(); bet(1); }
+    else if (e.key === "ArrowDown") { e.preventDefault(); bet(-1); }
+    else if (e.key === "l" || e.key === "L") { if (!spinning) { cfg.lines = cfg.lines === 1 ? 3 : cfg.lines === 3 ? 5 : 1; save(); flashLines(); updateUI(); } }
+  });
+  // stop native focus-activation of buttons by Space (we handle Space globally)
+  document.addEventListener("keyup", function (e) { if ((e.code === "Space" || e.key === " ") && e.target && e.target.tagName === "BUTTON") e.preventDefault(); });
+  Array.prototype.forEach.call(document.querySelectorAll("button"), function (b) { b.addEventListener("keydown", function (e) { if (e.code === "Space" || e.key === " ") e.preventDefault(); }); });
+
+  function renderAll() { renderPaytable(); if (factKey) showFact(factKey); updateUI(); }
+
+  window.__slot = { evalSpin: evalSpin, theo: THEO, state: function () { return { credits: credits, spinning: spinning, stats: stats, result: result }; } };
+  applyTheme(lsGet("theme") || "dark");
+  setMute(muted);
+  applyLang(lang, false);
+  layout();
+  setTimeout(layout, 60);
+  setMsg(T("SPIN で粒子を衝突させよう！", "Hit SPIN to collide some particles!"));
+})();
+</script>
+</body>
+</html>

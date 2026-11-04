@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Perfect Pitch Trainer</title>
+<style>
+  :root { --bg:#0a0f1f; --fg:#e9eefb; --muted:#98a3c0; --c1:#4de1ff; --c2:#ff5ca8; --c3:#ffd166; --ok:#5ef0a0; --vi:#8b7bff; --bad:#ff6b8b;
+    --card:rgba(255,255,255,.045); --card2:rgba(255,255,255,.08); --line:rgba(255,255,255,.12); --btnink:#07101f; --shadow:0 10px 30px rgba(0,0,0,.35);
+    --white:#eef2fb; --whiteTxt:#26304d; --black:#1a2140; --blackTxt:#cfd8f3; color-scheme:dark; }
+  body[data-t="light"] { --bg:#f6f7fb; --fg:#121a30; --muted:#5a6683; --c1:#0b8fb9; --c2:#d42f7c; --c3:#a8680a; --ok:#118a52; --vi:#5b4bd6; --bad:#c92a4f;
+    --card:#ffffff; --card2:#eef1f8; --line:rgba(18,26,48,.12); --btnink:#ffffff; --shadow:0 8px 24px rgba(18,26,48,.08);
+    --white:#ffffff; --whiteTxt:#26304d; --black:#232b47; --blackTxt:#e3e8f7; color-scheme:light; }
+  * { box-sizing:border-box; }
+  html, body { margin:0; height:100%; }
+  body { background:var(--bg); color:var(--fg); font-family:Inter, "Noto Sans JP", "Hiragino Sans", system-ui, sans-serif; line-height:1.5; -webkit-text-size-adjust:100%; }
+  [data-l="en"] .ja, [data-l="ja"] .en { display:none !important; }
+  .mono { font-family:ui-monospace, monospace; }
+  #wrap { display:flex; flex-direction:column; height:100%; }
+  header { display:flex; align-items:center; gap:.45rem; padding:.6rem .9rem; border-bottom:1px solid var(--line); flex-shrink:0; }
+  header h1 { font-size:1rem; margin:0; flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .pill { font-family:ui-monospace, monospace; font-size:.78rem; color:var(--muted); border:1px solid var(--line); border-radius:999px; padding:.2rem .6rem; white-space:nowrap; }
+  button { font:inherit; cursor:pointer; border-radius:999px; border:1px solid var(--line); background:var(--card2); color:var(--fg); padding:.42rem .85rem; transition:transform .08s, background .15s, border-color .15s, opacity .15s; touch-action:manipulation; }
+  button:hover:not(:disabled) { border-color:var(--c1); }
+  button:active:not(:disabled) { transform:scale(.96); }
+  button:disabled { opacity:.38; cursor:default; }
+  button.sm { padding:.3rem .62rem; font-size:.82rem; }
+  button.primary { background:linear-gradient(90deg,var(--c1),var(--c2)); color:var(--btnink); border:0; font-weight:800; padding:.7rem 1.6rem; font-size:1rem; }
+  main { flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+  .container { max-width:760px; margin:0 auto; padding:.9rem 1rem 1.6rem; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:18px; padding:1rem 1.15rem; box-shadow:var(--shadow); }
+  .card + .card { margin-top:.8rem; }
+  .hidden { display:none !important; }
+  .muted { color:var(--muted); }
+  h2 { margin:.1rem 0 .4rem; font-size:clamp(1.2rem,4vw,1.6rem); line-height:1.3; }
+  .lead { color:var(--muted); margin:.1rem 0 .8rem; font-size:.95rem; }
+  .opt { margin:.65rem 0; }
+  .opt .lbl { font-size:.78rem; color:var(--muted); margin-bottom:.25rem; }
+  .seg { display:flex; flex-wrap:wrap; gap:.35rem; }
+  .seg button { padding:.38rem .8rem; font-size:.88rem; }
+  .seg button.on { background:linear-gradient(90deg,var(--c1),var(--c2)); color:var(--btnink); border-color:transparent; font-weight:700; }
+  .center { text-align:center; }
+  .row { display:flex; gap:.5rem; flex-wrap:wrap; align-items:center; }
+  .row.c { justify-content:center; }
+  .best { font-family:ui-monospace, monospace; color:var(--muted); font-size:.85rem; }
+
+  /* play area */
+  .toolbar { display:flex; align-items:center; justify-content:space-between; gap:.5rem; flex-wrap:wrap; }
+  .prog { height:6px; border-radius:6px; background:var(--card2); overflow:hidden; margin:.6rem 0 .2rem; }
+  .prog > div { height:100%; width:0; background:linear-gradient(90deg,var(--c1),var(--c2)); transition:width .3s; }
+  .stage { display:flex; flex-direction:column; align-items:center; gap:.55rem; padding:.6rem 0 .4rem; }
+  #listen { width:clamp(92px,24vw,120px); height:clamp(92px,24vw,120px); border-radius:50%; font-size:2rem; padding:0; position:relative; background:radial-gradient(circle at 35% 30%, rgba(77,225,255,.35), rgba(255,92,168,.25)); border:2px solid var(--c1); display:flex; flex-direction:column; align-items:center; justify-content:center; line-height:1.1; }
+  #listen small { font-size:.68rem; color:var(--muted); font-weight:600; }
+  #listen.pulse::after { content:""; position:absolute; inset:-6px; border-radius:50%; border:2px solid var(--c2); animation:ring 1s ease-out; }
+  @keyframes ring { from { transform:scale(.9); opacity:1; } to { transform:scale(1.35); opacity:0; } }
+  #fb { min-height:2.6em; text-align:center; font-weight:700; font-size:1rem; }
+  #fb .ok { color:var(--ok); } #fb .ng { color:var(--bad); }
+  #fb .sub { display:block; font-weight:500; font-size:.82rem; color:var(--muted); }
+  .qual { display:flex; gap:.4rem; justify-content:center; }
+  .qual button.on { background:var(--vi); color:#fff; border-color:transparent; font-weight:700; }
+
+  /* keyboard */
+  .kb { position:relative; height:clamp(140px,28vw,190px); margin:.4rem auto 0; max-width:620px; user-select:none; -webkit-user-select:none; touch-action:none; }
+  .k { position:absolute; top:0; border:1px solid var(--line); cursor:pointer; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; padding-bottom:.4rem; transition:background .12s, transform .06s; font-weight:700; }
+  .k.w { height:100%; background:var(--white); color:var(--whiteTxt); border-radius:0 0 10px 10px; z-index:1; border-color:rgba(18,26,48,.25); }
+  .k.b { height:60%; background:var(--black); color:var(--blackTxt); border-radius:0 0 8px 8px; z-index:2; font-size:.72rem; box-shadow:0 3px 6px rgba(0,0,0,.35); border-color:rgba(0,0,0,.5); padding-bottom:.3rem; }
+  .k .nm { font-size:.86rem; line-height:1.1; text-align:center; word-break:break-all; padding:0 2px; }
+  .k.b .nm { font-size:.7rem; }
+  .k .sc { font-family:ui-monospace, monospace; font-size:.62rem; opacity:.5; margin-top:.15rem; }
+  .k.down { transform:translateY(2px); filter:brightness(.92); }
+  .k.off { opacity:.28; cursor:default; }
+  .k.good { background:var(--ok) !important; color:#05301b !important; }
+  .k.bad { background:var(--bad) !important; color:#fff !important; }
+  .k.hint { box-shadow:inset 0 0 0 3px var(--c3); }
+
+  /* results */
+  .bigpct { font-family:ui-monospace, monospace; font-size:clamp(2.6rem,11vw,4rem); font-weight:900; line-height:1; background:linear-gradient(90deg,var(--c1),var(--c2)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .kv { display:flex; justify-content:center; gap:1.2rem; flex-wrap:wrap; margin:.6rem 0; font-family:ui-monospace, monospace; font-size:.9rem; color:var(--muted); }
+  .kv b { color:var(--fg); }
+  .heat { display:grid; grid-template-columns:repeat(12,1fr); gap:4px; margin:.5rem 0; }
+  .heat div { border-radius:8px; padding:.35rem 0; text-align:center; font-size:.72rem; font-weight:700; color:#0b1020; line-height:1.25; }
+  .heat div span { display:block; font-family:ui-monospace, monospace; font-weight:600; font-size:.66rem; opacity:.85; }
+  .conf { text-align:left; margin:.4rem auto 0; max-width:480px; padding-left:1.1rem; font-size:.9rem; }
+  .conf li { margin:.2rem 0; }
+  h3 { font-size:.95rem; margin:1rem 0 .2rem; }
+  .rank { font-size:1.15rem; font-weight:800; color:var(--c3); margin:.3rem 0; }
+  #help { position:fixed; inset:0; background:rgba(5,8,18,.7); display:flex; align-items:center; justify-content:center; padding:1rem; z-index:20; }
+  #help .card { max-width:540px; width:100%; max-height:90%; overflow-y:auto; }
+  #help ul { padding-left:1.2rem; margin:.4rem 0; font-size:.92rem; } #help li { margin:.25rem 0; }
+  .kbd { font-family:ui-monospace, monospace; font-size:.8em; border:1px solid var(--line); border-bottom-width:2px; border-radius:5px; padding:0 .3rem; }
+  .freq { font-family:ui-monospace, monospace; color:var(--c1); font-size:1.1rem; font-weight:800; min-height:1.6em; text-align:center; }
+  @media (max-width:520px) {
+    .container { padding:.7rem .7rem 1.4rem; }
+    .card { padding:.85rem .85rem; }
+    .heat { grid-template-columns:repeat(6,1fr); }
+    header h1 { font-size:.9rem; }
+    .k .sc { display:none; }
+  }
+</style>
+</head>
+<body data-l="ja" data-t="dark">
+<div id="wrap">
+  <header>
+    <h1>🎹 <span class="ja">絶対音感ゲーム</span><span class="en">Perfect Pitch Trainer</span></h1>
+    <span class="pill" id="status">—</span>
+    <button id="muteBtn" class="sm" type="button" aria-label="mute">🔊</button>
+    <button id="langBtn" class="sm" type="button">JA / EN</button>
+    <button id="helpBtn" class="sm" type="button" aria-label="How to play">?</button>
+  </header>
+  <main>
+    <div class="container">
+
+      <!-- Menu -->
+      <section id="menu" class="card">
+        <h2><span class="ja">その音、何の音？</span><span class="en">Name that note!</span></h2>
+        <p class="lead"><span class="ja">鳴った音の音名を鍵盤で答えよう。1回のテストは20問。平均律・A4 = 440 Hz。</span><span class="en">Hear a tone, then answer its pitch on the keyboard. 20 questions per test. Equal temperament, A4 = 440 Hz.</span></p>
+        <div class="opt"><div class="lbl"><span class="ja">モード</span><span class="en">Mode</span></div><div class="seg" id="modeSeg"></div></div>
+        <div class="opt" id="levelOpt"><div class="lbl"><span class="ja">レベル</span><span class="en">Level</span></div><div class="seg" id="levelSeg"></div></div>
+        <div class="opt"><div class="lbl"><span class="ja">音色</span><span class="en">Timbre</span></div><div class="seg" id="timbreSeg"></div></div>
+        <div class="opt"><div class="lbl"><span class="ja">音名表記</span><span class="en">Note names</span></div><div class="seg" id="nameSeg"></div></div>
+        <div class="row c" style="flex-direction:column;gap:.45rem;margin-top:1rem">
+          <button class="primary" id="startBtn" type="button"><span class="ja">スタート</span><span class="en">Start</span></button>
+          <div class="best" id="bestMenu"></div>
+        </div>
+      </section>
+
+      <!-- Play (test & practice share the keyboard) -->
+      <section id="play" class="card hidden">
+        <div class="toolbar">
+          <div class="mono muted" style="font-size:.85rem" id="qinfo"></div>
+          <div class="row">
+            <button class="sm" type="button" id="refBtn">🎵 A4</button>
+            <button class="sm" type="button" id="quitBtn"><span class="ja">やめる</span><span class="en">Quit</span></button>
+          </div>
+        </div>
+        <div class="prog" id="progWrap"><div id="prog"></div></div>
+        <div class="stage" id="testStage">
+          <button type="button" id="listen" aria-label="replay"><span>▶</span><small id="repLeft"></small></button>
+          <div class="qual hidden" id="qual">
+            <button type="button" data-q="maj" class="on"><span class="ja">長三和音</span><span class="en">Major</span> <span class="kbd">Z</span></button>
+            <button type="button" data-q="min"><span class="ja">短三和音</span><span class="en">Minor</span> <span class="kbd">X</span></button>
+          </div>
+          <div id="fb"></div>
+        </div>
+        <div class="stage hidden" id="practiceStage">
+          <div class="row c"><span class="muted" style="font-size:.85rem"><span class="ja">オクターブ</span><span class="en">Octave</span></span><div class="seg" id="octSeg"></div></div>
+          <div class="freq" id="freq">&nbsp;</div>
+        </div>
+        <div class="kb" id="kb"></div>
+        <div class="muted center" style="font-size:.75rem;margin-top:.5rem" id="kbHint"></div>
+      </section>
+
+      <!-- Results -->
+      <section id="result" class="card center hidden">
+        <div class="muted"><span class="ja">正答率</span><span class="en">Accuracy</span></div>
+        <div class="bigpct" id="rAcc">0%</div>
+        <div class="rank" id="rRank"></div>
+        <div class="kv" id="rKv"></div>
+        <div class="best" id="rBest"></div>
+        <h3><span class="ja">音ごとの正答率</span><span class="en">Accuracy per pitch class</span></h3>
+        <div class="heat" id="heat"></div>
+        <h3><span class="ja">間違えやすいパターン</span><span class="en">Common confusions</span></h3>
+        <ul class="conf" id="conf"></ul>
+        <div class="row c" style="margin-top:1rem">
+          <button class="primary" id="againBtn" type="button"><span class="ja">もう一度</span><span class="en">Try again</span></button>
+          <button id="menuBtn" type="button"><span class="ja">メニュー</span><span class="en">Menu</span></button>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<div id="help" class="hidden" role="dialog" aria-modal="true">
+  <div class="card">
+    <h2 style="font-size:1.2rem">❓ <span class="ja">遊び方</span><span class="en">How to play</span></h2>
+    <div class="ja"><ul>
+      <li><b>単音当て</b>：鳴った音の音名（オクターブは問わない）を鍵盤でクリック。白鍵のみ → 全12音 → 広い音域（C3–B5）と難しくなります。</li>
+      <li><b>和音当て</b>：三和音の根音を鍵盤で答えます。「長・短」レベルでは先に 長/短 を選んでから根音をクリック。</li>
+      <li><b>練習</b>：自由に鍵盤を弾いて基準の音を覚えましょう。</li>
+      <li>▶ で聴き直し（1問2回まで、回数は記録されます）。🎵 A4 は基準音（最難関レベルでは使用不可）。</li>
+      <li>キーボード：<span class="kbd">A</span><span class="kbd">W</span><span class="kbd">S</span><span class="kbd">E</span><span class="kbd">D</span><span class="kbd">F</span><span class="kbd">T</span><span class="kbd">G</span><span class="kbd">Y</span><span class="kbd">H</span><span class="kbd">U</span><span class="kbd">J</span> = C〜B、<span class="kbd">Space</span> 聴き直し、<span class="kbd">Z</span>/<span class="kbd">X</span> 長/短、<span class="kbd">R</span> A4。</li>
+      <li>表記は ドレミ / CDE / ハニホ（日本音名：ハ ニ ホ ヘ ト イ ロ、♯=嬰、♭=変）から選べます。</li>
+    </ul></div>
+    <div class="en"><ul>
+      <li><b>Single note</b>: click the pitch class you heard (octave doesn't matter). Levels: white keys → all 12 → wide range (C3–B5).</li>
+      <li><b>Chords</b>: name the root of a triad. In “Major & minor”, pick Major/Minor first, then click the root.</li>
+      <li><b>Practice</b>: play the keyboard freely to learn the reference pitches.</li>
+      <li>▶ replays the sound (2 per question; replays are counted). 🎵 A4 plays a reference tone (disabled on the hardest level).</li>
+      <li>Keys: <span class="kbd">A</span><span class="kbd">W</span><span class="kbd">S</span><span class="kbd">E</span><span class="kbd">D</span><span class="kbd">F</span><span class="kbd">T</span><span class="kbd">G</span><span class="kbd">Y</span><span class="kbd">H</span><span class="kbd">U</span><span class="kbd">J</span> = C…B, <span class="kbd">Space</span> replay, <span class="kbd">Z</span>/<span class="kbd">X</span> major/minor, <span class="kbd">R</span> A4.</li>
+      <li>Note names: Do-Re-Mi, C-D-E, or Japanese (ハ ニ ホ ヘ ト イ ロ, 嬰 = sharp, 変 = flat).</li>
+    </ul></div>
+    <div class="row c" style="margin-top:.6rem"><button class="primary" id="helpClose" type="button">OK</button></div>
+  </div>
+</div>
+
+<script>
+/*PITCH_CORE_BEGIN*/
+var A4 = 440;
+function midiToFreq(m) { return A4 * Math.pow(2, (m - 69) / 12); }
+var NAMES = {
+  cde:  ["C", "C♯", "D", "E♭", "E", "F", "F♯", "G", "A♭", "A", "B♭", "B"],
+  doremi: ["ド", "ド♯", "レ", "ミ♭", "ミ", "ファ", "ファ♯", "ソ", "ラ♭", "ラ", "シ♭", "シ"],
+  iroha: ["ハ", "嬰ハ", "ニ", "変ホ", "ホ", "ヘ", "嬰ヘ", "ト", "変イ", "イ", "変ロ", "ロ"]
+};
+var KEYMAP = { a: 0, w: 1, s: 2, e: 3, d: 4, f: 5, t: 6, g: 7, y: 8, h: 9, u: 10, j: 11 };
+/*PITCH_CORE_END*/
+
+(function () {
+  "use strict";
+  var $ = function (id) { return document.getElementById(id); };
+  function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+
+  var lang = lsGet("lang");
+  if (lang !== "ja" && lang !== "en") lang = ((navigator.language || "").toLowerCase().indexOf("ja") === 0) ? "ja" : "en";
+  var T = function (ja, en) { return lang === "ja" ? ja : en; };
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  function applyLang(l, save) { lang = l; document.body.setAttribute("data-l", l); document.documentElement.lang = l; if (save) lsSet("lang", l); rerender(); }
+  function applyTheme(t) { document.body.setAttribute("data-t", t === "light" ? "light" : "dark"); }
+  window.addEventListener("storage", function (e) {
+    if (e.key === "lang" && (e.newValue === "ja" || e.newValue === "en")) applyLang(e.newValue, false);
+    if (e.key === "theme" && e.newValue) applyTheme(e.newValue);
+  });
+  $("langBtn").addEventListener("click", function () { applyLang(lang === "ja" ? "en" : "ja", true); });
+  $("helpBtn").addEventListener("click", function () { $("help").classList.remove("hidden"); });
+  $("helpClose").addEventListener("click", function () { $("help").classList.add("hidden"); });
+  $("help").addEventListener("click", function (e) { if (e.target === $("help")) $("help").classList.add("hidden"); });
+
+  /* ---------- options ---------- */
+  var MODES = [
+    { id: "single", ja: "単音当て", en: "Single note" },
+    { id: "chord", ja: "和音当て", en: "Chords" },
+    { id: "practice", ja: "練習", en: "Practice" }
+  ];
+  var LEVELS = {
+    single: [
+      { id: 1, ja: "白鍵のみ（C4–B4）", en: "White keys (C4–B4)" },
+      { id: 2, ja: "全12音（C4–B4）", en: "All 12 (C4–B4)" },
+      { id: 3, ja: "全12音・広い音域（C3–B5）", en: "All 12, wide range (C3–B5)", hard: true }
+    ],
+    chord: [
+      { id: 1, ja: "長三和音のみ", en: "Major triads" },
+      { id: 2, ja: "長・短三和音", en: "Major & minor" }
+    ]
+  };
+  var TIMBRES = [{ id: "piano", ja: "ピアノ風", en: "Piano-like" }, { id: "sine", ja: "サイン波", en: "Sine" }, { id: "organ", ja: "オルガン", en: "Organ" }];
+  var NAMINGS = [{ id: "doremi", ja: "ドレミ", en: "Do Re Mi" }, { id: "cde", ja: "CDE", en: "C D E" }, { id: "iroha", ja: "ハニホ", en: "ハニホ (JP)" }];
+  function pick(list, v, d) { return list.some(function (x) { return x.id === v; }) ? v : d; }
+  var opt = {
+    mode: pick(MODES, lsGet("pp.mode"), "single"),
+    level: parseInt(lsGet("pp.level"), 10) || 1,
+    timbre: pick(TIMBRES, lsGet("pp.timbre"), "piano"),
+    naming: pick(NAMINGS, lsGet("pp.naming"), lang === "ja" ? "doremi" : "cde")
+  };
+  function levels() { return LEVELS[opt.mode] || []; }
+  function curLevel() { var l = levels(); for (var i = 0; i < l.length; i++) if (l[i].id === opt.level) return l[i]; return l[0]; }
+  function fixLevel() { if (opt.mode !== "practice" && !levels().some(function (l) { return l.id === opt.level; })) opt.level = 1; }
+  fixLevel();
+  function saveOpt() { lsSet("pp.mode", opt.mode); lsSet("pp.level", String(opt.level)); lsSet("pp.timbre", opt.timbre); lsSet("pp.naming", opt.naming); }
+  function nm(pc) { return NAMES[opt.naming][((pc % 12) + 12) % 12]; }
+  function sciName(m) { return NAMES.cde[m % 12] + (Math.floor(m / 12) - 1); }
+  function chordName(pc, q) {
+    if (opt.naming === "cde") return nm(pc) + (q === "min" ? "m" : "") + T(q === "min" ? "（短三和音）" : "（長三和音）", q === "min" ? " minor" : " major");
+    if (opt.naming === "iroha") return nm(pc) + T(q === "min" ? "短三和音" : "長三和音", q === "min" ? " minor" : " major");
+    return nm(pc) + T(q === "min" ? " の短三和音" : " の長三和音", q === "min" ? " minor" : " major");
+  }
+
+  function seg(id, list, cur, onPick) {
+    var box = $(id); box.innerHTML = "";
+    list.forEach(function (it) {
+      var b = document.createElement("button"); b.type = "button"; b.textContent = T(it.ja, it.en);
+      if (it.id === cur) b.className = "on";
+      b.addEventListener("click", function () { onPick(it.id); });
+      box.appendChild(b);
+    });
+  }
+  function renderMenu() {
+    seg("modeSeg", MODES, opt.mode, function (v) { opt.mode = v; fixLevel(); saveOpt(); renderMenu(); });
+    $("levelOpt").classList.toggle("hidden", opt.mode === "practice");
+    if (opt.mode !== "practice") seg("levelSeg", levels(), opt.level, function (v) { opt.level = v; saveOpt(); renderMenu(); });
+    seg("timbreSeg", TIMBRES, opt.timbre, function (v) { opt.timbre = v; saveOpt(); renderMenu(); ensureAudio(); playNotes([60, 64, 67].slice(0, 1), 0.9); });
+    seg("nameSeg", NAMINGS, opt.naming, function (v) { opt.naming = v; saveOpt(); renderMenu(); buildKeyboard(); });
+    var b = getBest();
+    $("bestMenu").textContent = opt.mode === "practice" ? T("練習モードは記録なし", "Practice mode isn't scored") :
+      (b ? T("ベスト：", "Best: ") + b.acc + "% · " + (b.rt / 1000).toFixed(2) + " s" : T("ベスト：まだ記録なし", "Best: no record yet"));
+  }
+
+  /* ---------- audio ---------- */
+  var AC = null, master = null, muted = lsGet("pp.mute") === "1";
+  function ensureAudio() {
+    if (AC) { if (AC.state === "suspended") AC.resume(); return; }
+    var C = window.AudioContext || window.webkitAudioContext; if (!C) return;
+    try {
+      AC = new C();
+      var comp = AC.createDynamicsCompressor(); comp.threshold.value = -12; comp.ratio.value = 4;
+      master = AC.createGain(); master.gain.value = muted ? 0 : 0.8;
+      master.connect(comp); comp.connect(AC.destination);
+    } catch (e) { AC = null; }
+  }
+  function setMute(m) { muted = m; lsSet("pp.mute", m ? "1" : "0"); $("muteBtn").textContent = m ? "🔇" : "🔊"; if (master) master.gain.value = m ? 0 : 0.8; }
+  $("muteBtn").addEventListener("click", function () { ensureAudio(); setMute(!muted); });
+
+  var live = [];
+  function stopAll() { var t = AC ? AC.currentTime : 0; live.forEach(function (v) { try { v.g.gain.cancelScheduledValues(t); v.g.gain.setTargetAtTime(0, t, 0.02); v.o.stop(t + 0.15); } catch (e) {} }); live = []; }
+  function partial(f, amp, t0, attack, hold, decayTau, end, out) {
+    var o = AC.createOscillator(), g = AC.createGain();
+    o.type = "sine"; o.frequency.value = f;
+    g.gain.setValueAtTime(0, t0);
+    g.gain.linearRampToValueAtTime(amp, t0 + attack);
+    if (decayTau) g.gain.setTargetAtTime(0, t0 + attack, decayTau);
+    else { g.gain.setValueAtTime(amp, t0 + attack + hold); g.gain.linearRampToValueAtTime(0, end); }
+    g.gain.setTargetAtTime(0, end - 0.08, 0.03);
+    o.connect(g); g.connect(out); o.start(t0); o.stop(end + 0.1);
+    live.push({ o: o, g: g });
+  }
+  function voice(m, t0, vol, dur) {
+    var f = midiToFreq(m), out = AC.createGain(); out.gain.value = vol; out.connect(master);
+    var nyq = AC.sampleRate / 2.2;
+    if (opt.timbre === "sine") {
+      partial(f, 0.5, t0, 0.02, dur - 0.3, 0, t0 + dur, out);
+    } else if (opt.timbre === "organ") {
+      var H = [[1, 1], [2, .55], [3, .35], [4, .28], [6, .14], [8, .1]], sum = 0;
+      H.forEach(function (h) { sum += h[1]; });
+      H.forEach(function (h) { if (f * h[0] < nyq) partial(f * h[0], 0.55 * h[1] / sum, t0, 0.03, dur - 0.25, 0, t0 + dur, out); });
+    } else { // piano-like: inharmonic partials with faster decay for higher harmonics and higher notes
+      var B = 0.00035, s2 = 0, amps = [];
+      for (var n = 1; n <= 10; n++) { var a = 1 / Math.pow(n, 1.35) * (n === 1 ? 1 : 0.85); amps.push(a); s2 += a; }
+      var pitchK = Math.pow(261.63 / f, 0.35);
+      for (var k = 1; k <= 10; k++) {
+        var fk = k * f * Math.sqrt(1 + B * k * k); if (fk > nyq) break;
+        var tau = 0.75 * pitchK / (1 + 0.45 * (k - 1));
+        partial(fk, 0.7 * amps[k - 1] / s2, t0, 0.004, 0, tau, t0 + dur + 0.6, out);
+      }
+    }
+  }
+  function playNotes(midis, dur) {
+    if (!AC || muted) return;
+    stopAll();
+    var t0 = AC.currentTime + 0.03, vol = midis.length > 1 ? 0.55 : 1;
+    midis.forEach(function (m) { voice(m, t0, vol, dur || 1.3); });
+    var L = $("listen"); L.classList.remove("pulse"); void L.offsetWidth; L.classList.add("pulse");
+  }
+
+  /* ---------- keyboard ---------- */
+  var WHITE = [0, 2, 4, 5, 7, 9, 11], BLACKPOS = { 1: 1, 3: 2, 6: 4, 8: 5, 10: 6 };
+  var SHORT = ["A", "W", "S", "E", "D", "F", "T", "G", "Y", "H", "U", "J"];
+  var keyEls = {};
+  function buildKeyboard() {
+    var kb = $("kb"); kb.innerHTML = ""; keyEls = {};
+    var ww = 100 / 7;
+    WHITE.forEach(function (pc, i) { addKey(pc, "w", i * ww, ww); });
+    Object.keys(BLACKPOS).forEach(function (pcs) { var pc = +pcs, bw = ww * 0.62; addKey(pc, "b", BLACKPOS[pc] * ww - bw / 2, bw); });
+    updateKeyStates();
+  }
+  function addKey(pc, cls, left, width) {
+    var d = document.createElement("div");
+    d.className = "k " + cls; d.style.left = left + "%"; d.style.width = width + "%"; d.dataset.pc = pc;
+    d.innerHTML = '<span class="nm">' + esc(nm(pc)) + '</span><span class="sc">' + SHORT[pc] + "</span>";
+    d.setAttribute("role", "button"); d.setAttribute("aria-label", NAMES.cde[pc]);
+    d.addEventListener("pointerdown", function (e) { e.preventDefault(); press(pc); });
+    $("kb").appendChild(d); keyEls[pc] = d;
+  }
+  function keyAllowed(pc) { return !(screen === "test" && opt.mode === "single" && opt.level === 1 && WHITE.indexOf(pc) < 0); }
+  function updateKeyStates() { for (var pc = 0; pc < 12; pc++) if (keyEls[pc]) keyEls[pc].classList.toggle("off", !keyAllowed(pc)); }
+  function flash(pc, cls, ms) { var el = keyEls[pc]; if (!el) return; el.classList.add(cls); setTimeout(function () { el.classList.remove(cls); }, ms || 700); }
+  function press(pc) {
+    ensureAudio();
+    if (!keyAllowed(pc)) return;
+    var el = keyEls[pc]; if (el) { el.classList.add("down"); setTimeout(function () { el.classList.remove("down"); }, 120); }
+    if (screen === "practice") {
+      var m = 12 * (practiceOct + 1) + pc; playNotes([m], 1.2);
+      $("freq").textContent = nm(pc) + "  ·  " + sciName(m) + " = " + midiToFreq(m).toFixed(2) + " Hz";
+    } else if (screen === "test") answer(pc);
+  }
+
+  /* ---------- test ---------- */
+  var N_Q = 20, MAX_REPLAY = 2;
+  var screen = "menu", qs = [], qi = 0, cur = null, locked = false, quality = "maj", practiceOct = 4;
+  var log = [];
+  function rand(n) { return Math.floor(Math.random() * n); }
+  function makeQuestion(prev) {
+    var q = {}, guard = 0;
+    do {
+      if (opt.mode === "single") {
+        var m;
+        if (opt.level === 1) m = 60 + WHITE[rand(7)];
+        else if (opt.level === 2) m = 60 + rand(12);
+        else m = 48 + rand(36);
+        q = { midis: [m], pc: m % 12, q: null };
+      } else {
+        var root = 55 + rand(12), qual = opt.level === 2 && Math.random() < 0.5 ? "min" : "maj";
+        q = { midis: [root, root + (qual === "min" ? 3 : 4), root + 7], pc: root % 12, q: qual };
+      }
+    } while (prev && q.pc === prev.pc && q.q === prev.q && ++guard < 20);
+    return q;
+  }
+  function start() {
+    ensureAudio();
+    if (opt.mode === "practice") { startPractice(); return; }
+    screen = "test"; qi = 0; log = []; cur = null;
+    show("play");
+    $("testStage").classList.remove("hidden"); $("practiceStage").classList.add("hidden"); $("progWrap").classList.remove("hidden");
+    $("qual").classList.toggle("hidden", !(opt.mode === "chord" && opt.level === 2));
+    setQuality("maj");
+    $("refBtn").disabled = !!curLevel().hard;
+    $("refBtn").title = curLevel().hard ? T("このレベルでは基準音は使えません", "No reference tone on this level") : "";
+    buildKeyboard();
+    $("kbHint").textContent = T("鍵盤をクリック／タップ、または A W S E D F T G Y H U J キー", "Click/tap a key, or use A W S E D F T G Y H U J");
+    nextQuestion();
+  }
+  function nextQuestion() {
+    if (qi >= N_Q) { finish(); return; }
+    cur = makeQuestion(cur); cur.replays = 0; cur.t0 = 0;
+    locked = false; $("fb").innerHTML = "&nbsp;";
+    if (opt.mode === "chord" && opt.level === 2) setQuality("maj");
+    updateInfo();
+    setTimeout(function () { if (screen === "test" && cur) { playNotes(cur.midis, opt.mode === "chord" ? 1.6 : 1.3); cur.t0 = performance.now(); } }, 350);
+  }
+  function replay() {
+    if (screen !== "test" || !cur || locked) return;
+    if (cur.replays >= MAX_REPLAY) return;
+    cur.replays++; playNotes(cur.midis, opt.mode === "chord" ? 1.6 : 1.3); updateInfo();
+  }
+  $("listen").addEventListener("click", function () { ensureAudio(); replay(); });
+  function refTone() {
+    ensureAudio();
+    if (screen === "test" && (curLevel().hard || locked)) return;
+    if (screen === "test" && cur) cur.refs = (cur.refs || 0) + 1;
+    playNotes([69], 1.1);
+    if (screen === "practice") $("freq").textContent = nm(9) + "  ·  A4 = 440.00 Hz";
+  }
+  $("refBtn").addEventListener("click", refTone);
+  function setQuality(q) { quality = q; Array.prototype.forEach.call($("qual").children, function (b) { b.classList.toggle("on", b.dataset.q === q); }); }
+  $("qual").addEventListener("click", function (e) { var b = e.target.closest("button"); if (b) setQuality(b.dataset.q); });
+
+  function answer(pc) {
+    if (locked || !cur || !cur.t0) return;
+    locked = true;
+    var rt = performance.now() - cur.t0;
+    var needQ = opt.mode === "chord" && opt.level === 2;
+    var ansQ = needQ ? quality : (opt.mode === "chord" ? "maj" : null);
+    var ok = pc === cur.pc && (!needQ || ansQ === cur.q);
+    log.push({ pc: cur.pc, q: cur.q, ans: pc, ansQ: ansQ, ok: ok, rt: rt, replays: cur.replays, midi: cur.midis[0] });
+    var label = opt.mode === "chord" ? chordName(cur.pc, cur.q) :
+      (opt.naming === "cde" ? sciName(cur.midis[0]) : nm(cur.pc) + " (" + sciName(cur.midis[0]) + ")");
+    var rts = (rt / 1000).toFixed(2) + " s";
+    if (ok) {
+      flash(pc, "good", 800);
+      $("fb").innerHTML = '<span class="ok">✓ ' + T("正解！ ", "Correct! ") + esc(label) + '</span><span class="sub">⏱ ' + rts + "</span>";
+    } else {
+      flash(pc, "bad", 900); flash(cur.pc, "good", 1300);
+      var your = opt.mode === "chord" ? chordName(pc, ansQ) : nm(pc);
+      $("fb").innerHTML = '<span class="ng">✗ ' + T("正解は ", "It was ") + esc(label) + '</span><span class="sub">' + T("あなたの答え：", "You answered: ") + esc(your) + " · ⏱ " + rts + "</span>";
+      setTimeout(function () { if (screen === "test") playNotes(cur.midis, 1.0); }, 380);
+    }
+    qi++; updateInfo();
+    setTimeout(function () { if (screen === "test") nextQuestion(); }, ok ? 1100 : 2000);
+  }
+  function updateInfo() {
+    var correct = log.filter(function (r) { return r.ok; }).length;
+    if (screen === "test") {
+      $("qinfo").textContent = T("問題 ", "Q ") + Math.min(qi + (locked ? 0 : 1), N_Q) + " / " + N_Q + " · ✓ " + correct;
+      $("prog").style.width = (100 * qi / N_Q) + "%";
+      $("status").textContent = Math.min(qi + (locked ? 0 : 1), N_Q) + "/" + N_Q + " · ✓" + correct;
+      var left = cur ? MAX_REPLAY - cur.replays : MAX_REPLAY;
+      $("repLeft").textContent = T("もう一度 ", "replay ") + left;
+      $("listen").disabled = !cur || left <= 0 || locked;
+    }
+  }
+  function show(id) { ["menu", "play", "result"].forEach(function (s) { $(s).classList.toggle("hidden", s !== id); }); document.querySelector("main").scrollTop = 0; }
+
+  function startPractice() {
+    screen = "practice"; show("play");
+    $("testStage").classList.add("hidden"); $("practiceStage").classList.remove("hidden"); $("progWrap").classList.add("hidden");
+    $("refBtn").disabled = false; $("refBtn").title = "";
+    $("qinfo").textContent = T("練習モード", "Practice mode");
+    $("status").textContent = T("練習", "Practice");
+    seg("octSeg", [{ id: 3, ja: "3", en: "3" }, { id: 4, ja: "4", en: "4" }, { id: 5, ja: "5", en: "5" }], practiceOct, function (v) { practiceOct = v; startPractice(); });
+    buildKeyboard();
+    $("kbHint").textContent = T("鍵盤を弾いて音を覚えよう（A W S E D F T G Y H U J キーも可）", "Play keys to learn the pitches (A W S E D F T G Y H U J work too)");
+  }
+
+  /* ---------- results ---------- */
+  function bestKey() { return "pp.best." + opt.mode + "." + opt.level; }
+  function getBest() { try { var b = JSON.parse(localStorage.getItem(bestKey())); return b && typeof b.acc === "number" ? b : null; } catch (e) { return null; } }
+  var lastRes = null;
+  function finish() {
+    screen = "result"; stopAll();
+    var n = log.length, ok = log.filter(function (r) { return r.ok; }).length;
+    var acc = n ? Math.round(100 * ok / n) : 0;
+    var rt = n ? log.reduce(function (s, r) { return s + r.rt; }, 0) / n : 0;
+    var reps = log.reduce(function (s, r) { return s + r.replays; }, 0);
+    var prev = getBest(), isNew = !prev || acc > prev.acc || (acc === prev.acc && rt < prev.rt);
+    if (isNew && n) lsSet(bestKey(), JSON.stringify({ acc: acc, rt: Math.round(rt), date: new Date().toISOString().slice(0, 10) }));
+    lastRes = { acc: acc, rt: rt, reps: reps, isNew: isNew, n: n, ok: ok };
+    renderResult(); show("result");
+  }
+  function rankOf(acc) {
+    if (acc >= 95) return T("🏆 絶対音感の持ち主！", "🏆 Perfect pitch!");
+    if (acc >= 80) return T("🎼 かなりの音感", "🎼 Excellent ear");
+    if (acc >= 60) return T("🎤 カラオケ上級者", "🎤 Karaoke pro");
+    if (acc >= 40) return T("🎵 いい線いってる", "🎵 Getting there");
+    return T("🌱 練習モードで耳を育てよう", "🌱 Train your ear in Practice mode");
+  }
+  function renderResult() {
+    var r = lastRes; if (!r) return;
+    $("rAcc").textContent = r.acc + "%";
+    $("rRank").textContent = rankOf(r.acc);
+    $("rKv").innerHTML = "<span>✓ <b>" + r.ok + "/" + r.n + "</b></span><span>⏱ " + T("平均", "avg") + " <b>" + (r.rt / 1000).toFixed(2) + " s</b></span><span>🔁 " + T("聴き直し", "replays") + " <b>" + r.reps + "</b></span>";
+    var lv = curLevel(), b = getBest();
+    $("rBest").textContent = (r.isNew ? T("🎉 自己ベスト！ ", "🎉 New best! ") : "") + T(MODES.filter(function (m) { return m.id === opt.mode; })[0].ja + "・" + lv.ja, MODES.filter(function (m) { return m.id === opt.mode; })[0].en + " · " + lv.en) + " — " + T("ベスト ", "best ") + (b ? b.acc + "% / " + (b.rt / 1000).toFixed(2) + " s" : "—");
+    $("status").textContent = r.acc + "%";
+    // heatmap
+    var h = "";
+    for (var pc = 0; pc < 12; pc++) {
+      var items = log.filter(function (x) { return x.pc === pc; }), k = items.filter(function (x) { return x.ok; }).length;
+      var bg = items.length ? "hsl(" + Math.round(120 * k / items.length) + ",70%,62%)" : "var(--card2)";
+      var col = items.length ? "#0b1020" : "var(--muted)";
+      h += '<div style="background:' + bg + ";color:" + col + '">' + esc(nm(pc)) + "<span>" + (items.length ? k + "/" + items.length : "—") + "</span></div>";
+    }
+    $("heat").innerHTML = h;
+    // confusions
+    var pairs = {}, qErr = 0;
+    log.forEach(function (x) {
+      if (x.ok) return;
+      if (x.ans !== x.pc) { var key = x.pc + ">" + x.ans; pairs[key] = (pairs[key] || 0) + 1; }
+      else if (x.q && x.ansQ !== x.q) qErr++;
+    });
+    var arr = Object.keys(pairs).map(function (k) { var p = k.split(">"); return { a: +p[0], b: +p[1], n: pairs[k] }; }).sort(function (x, y) { return y.n - x.n; }).slice(0, 4);
+    var c = "";
+    arr.forEach(function (p) {
+      var d = ((p.b - p.a) % 12 + 12) % 12, up = d <= 6, st = up ? d : 12 - d;
+      var dir = T("（半音" + st + "つ" + (up ? "上" : "下") + "）", " (" + st + " semitone" + (st > 1 ? "s" : "") + (up ? " high" : " low") + ")");
+      var A = "<b>" + esc(nm(p.a)) + "</b>", Bn = "<b>" + esc(nm(p.b)) + "</b>";
+      c += "<li>" + (lang === "ja"
+        ? A + (p.n > 1 ? " のときに " + Bn + " と答えがち" : " を " + Bn + " と答えた")
+        : (p.n > 1 ? "You often answered " : "You answered ") + Bn + " when it was " + A) + esc(dir) + " ×" + p.n + "</li>";
+    });
+    if (qErr) c += "<li>" + esc(T("根音は合っていたが長/短を間違えた：", "Right root but wrong major/minor: ")) + "<b>×" + qErr + "</b></li>";
+    if (!c) c = "<li>" + esc(T("間違いなし！すばらしい耳です 👏", "No mistakes — amazing ears! 👏")) + "</li>";
+    $("conf").innerHTML = c;
+  }
+  $("againBtn").addEventListener("click", start);
+  $("menuBtn").addEventListener("click", toMenu);
+  $("quitBtn").addEventListener("click", toMenu);
+  function toMenu() { screen = "menu"; stopAll(); cur = null; show("menu"); renderMenu(); setStatus(); }
+  $("startBtn").addEventListener("click", start);
+  function setStatus() { if (screen === "menu") $("status").textContent = T("A4 = 440 Hz", "A4 = 440 Hz"); }
+
+  document.addEventListener("keydown", function (e) {
+    if (!$("help").classList.contains("hidden")) { if (e.key === "Escape" || e.key === "Enter") $("help").classList.add("hidden"); return; }
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    var k = (e.key || "").toLowerCase();
+    if (screen === "test" || screen === "practice") {
+      if (KEYMAP.hasOwnProperty(k)) { if (!e.repeat) press(KEYMAP[k]); e.preventDefault(); return; }
+      if (k === " " || e.code === "Space") { e.preventDefault(); if (!e.repeat) { ensureAudio(); if (screen === "test") replay(); } return; }
+      if (k === "r") { refTone(); return; }
+      if (screen === "test" && opt.mode === "chord" && opt.level === 2) { if (k === "z") setQuality("maj"); if (k === "x") setQuality("min"); }
+      if (k === "escape") toMenu();
+    } else if (k === "enter" && !(e.target && e.target.tagName === "BUTTON")) { e.preventDefault(); start(); }
+  });
+
+  function rerender() {
+    renderMenu();
+    if (screen === "test" || screen === "practice") { buildKeyboard(); updateInfo(); }
+    if (screen === "practice") startPractice();
+    if (screen === "test") $("kbHint").textContent = T("鍵盤をクリック／タップ、または A W S E D F T G Y H U J キー", "Click/tap a key, or use A W S E D F T G Y H U J");
+    if (screen === "result") renderResult();
+    setStatus();
+  }
+  window.__pp = { midiToFreq: midiToFreq, state: function () { return { screen: screen, qi: qi, cur: cur, log: log, locked: locked }; } };
+
+  applyTheme(lsGet("theme") || "dark");
+  setMute(muted);
+  buildKeyboard();
+  applyLang(lang, false);
+})();
+</script>
+</body>
+</html>
