@@ -57,6 +57,8 @@
     var b = e.target.closest("[data-play]"); if (!b) return;
     var g = games.find(function (x) { return x.id === b.getAttribute("data-play"); });
     if (!g) return;
+    // games read the theme from localStorage; persist the one the site is showing now
+    try { localStorage.setItem("theme", K.theme()); } catch (err) {}
     $("g-title").innerHTML = bi(g.title);
     $("g-newtab").href = url(g.path);
     frame.src = url(g.path);
